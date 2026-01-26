@@ -18,7 +18,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('medtrack_token');
+    const savedToken = localStorage.getItem('dosely_token');
     if (savedToken) {
       setToken(savedToken);
     }
@@ -26,13 +26,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (newToken: string) => {
-    localStorage.setItem('medtrack_token', newToken);
+    localStorage.setItem('dosely_token', newToken);
     setToken(newToken);
     navigate('/dashboard');
   };
 
   const logout = () => {
-    localStorage.removeItem('medtrack_token');
+    localStorage.removeItem('dosely_token');
     setToken(null);
     navigate('/login');
   };

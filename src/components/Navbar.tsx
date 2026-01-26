@@ -1,11 +1,11 @@
-'use client';
 
-import { useRouter } from 'next/navigation';
+
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
 export default function Navbar() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState('dark');
 
@@ -24,8 +24,8 @@ export default function Navbar() {
 
   const handleLogout = () => {
     setLoading(true);
-    localStorage.removeItem('auth_token');
-    router.push('/login');
+    localStorage.removeItem('dosely_token');
+    navigate('/login');
   };
 
   return (
@@ -41,10 +41,11 @@ export default function Navbar() {
         background: 'linear-gradient(to right, #a78bfa, #22d3ee)', 
         WebkitBackgroundClip: 'text', 
         WebkitTextFillColor: 'transparent',
-        fontSize: '1.5rem',
-        fontWeight: 'bold'
+        fontSize: '2rem',
+        fontWeight: 'bold',
+        fontFamily: "'Outfit', sans-serif"
       }}>
-        Medicine Tracker
+        Dosely
       </h1>
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
         <button

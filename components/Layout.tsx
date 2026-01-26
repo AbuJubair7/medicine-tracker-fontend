@@ -14,10 +14,10 @@ const Layout: React.FC = () => {
       {/* Sidebar for Desktop */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-6 sticky top-0 h-screen">
         <div className="flex items-center gap-2 mb-10 px-2">
-          <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
-            <Pill className="text-white w-6 h-6" />
+          <div className="p-1">
+            <img src="/favicon.svg" alt="Logo" className="w-14 h-14" />
           </div>
-          <span className="font-bold text-xl tracking-tight text-slate-800">MedTrack<span className="text-blue-600">Pro</span></span>
+          <span className="font-bold text-2xl tracking-tight text-slate-800" style={{ fontFamily: "'Outfit', sans-serif" }}>Dosely</span>
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -46,9 +46,9 @@ const Layout: React.FC = () => {
 
       {/* Mobile Top Nav */}
       <header className="md:hidden glass-effect sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-slate-200">
-        <div className="flex items-center gap-2">
-          <Pill className="text-blue-600 w-6 h-6" />
-          <span className="font-bold text-lg text-slate-800">MedTrack</span>
+        <div className="flex items-center gap-3">
+          <img src="/favicon.svg" alt="Dosely" className="w-10 h-10" />
+          <span className="font-bold text-xl text-slate-800" style={{ fontFamily: "'Outfit', sans-serif" }}>Dosely</span>
         </div>
         <button onClick={logout} className="p-2 text-slate-500 hover:text-red-500 transition-colors">
           <LogOut className="w-5 h-5" />

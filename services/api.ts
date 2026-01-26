@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('medtrack_token');
+  const token = localStorage.getItem('dosely_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -20,7 +20,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('medtrack_token');
+      localStorage.removeItem('dosely_token');
       window.location.hash = '/login';
     }
     return Promise.reject(error);

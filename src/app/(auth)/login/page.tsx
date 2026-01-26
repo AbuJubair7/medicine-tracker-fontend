@@ -1,14 +1,11 @@
-'use client';
-
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '@/services/api';
 import { GoogleLogin } from '@react-oauth/google';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,8 +20,8 @@ export default function LoginPage() {
       const { token } = response.data;
 
       if (token) {
-        localStorage.setItem('auth_token', token);
-        router.push('/dashboard');
+        localStorage.setItem('dosely_token', token);
+        navigate('/dashboard');
       } else {
         throw new Error('Invalid response from server');
       }
@@ -44,8 +41,8 @@ export default function LoginPage() {
       const response = await api.post('/user/google-login', { token: credential });
       const { token } = response.data;
       if (token) {
-        localStorage.setItem('auth_token', token);
-        router.push('/dashboard');
+        localStorage.setItem('dosely_token', token);
+        navigate('/dashboard');
       }
     } catch (err) {
       console.error("Google Login Error", err);
@@ -126,7 +123,7 @@ export default function LoginPage() {
 
         <p style={{ marginTop: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
           Don't have an account?{' '}
-          <Link href="/signup" style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+          <Link to="/signup" style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
             Sign Up
           </Link>
         </p>

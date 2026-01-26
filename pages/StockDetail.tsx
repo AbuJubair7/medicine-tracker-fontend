@@ -128,8 +128,8 @@ const StockDetail: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="bg-blue-600 p-2.5 rounded-2xl shadow-lg shadow-blue-200">
-              <Pill className="text-white w-6 h-6" />
+            <div className="p-1">
+              <img src="/favicon.svg" alt="Stock Icon" className="w-12 h-12" />
             </div>
             <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">{stock.name}</h1>
           </div>

@@ -13,7 +13,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('dosely_token');
       if (token && config.headers) {
         // Backend middleware expects just the token or Bearer?
         // Checking authMiddleware... usually it extracts from Authorization header.

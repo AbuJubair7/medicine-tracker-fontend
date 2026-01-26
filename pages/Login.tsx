@@ -51,10 +51,10 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center p-6 bg-[#f8fafc]">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="bg-blue-600 p-4 rounded-3xl shadow-xl shadow-blue-200 inline-block mb-4 animate-bounce-short">
-            <Pill className="text-white w-10 h-10" />
+          <div className="inline-block mb-4 animate-bounce-short">
+            <img src="/favicon.svg" alt="Dosely Logo" className="w-32 h-32" />
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">MedTrack Pro</h1>
+          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>Dosely</h1>
           <p className="text-slate-500 font-medium mt-1 text-sm">Sign in to manage your medication inventory.</p>
         </div>
 

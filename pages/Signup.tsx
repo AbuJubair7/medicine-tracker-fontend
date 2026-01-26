@@ -31,10 +31,10 @@ const Signup: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <div className="bg-blue-600 p-4 rounded-3xl shadow-xl shadow-blue-200 inline-block mb-6">
-            <Pill className="text-white w-10 h-10" />
+          <div className="inline-block mb-6">
+            <img src="/favicon.svg" alt="Dosely Logo" className="w-28 h-28" />
           </div>
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Join MedTrack</h1>
+          <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>Join Dosely</h1>
           <p className="text-slate-500 font-medium mt-2">Start tracking your health journey today.</p>
         </div>
 
