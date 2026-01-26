@@ -13,6 +13,18 @@
   --font-primary: 'Inter', system-ui, sans-serif;
 }
 
+:root[data-theme='light'] {
+  --bg-primary: #f0f9ff;
+  --bg-secondary: #e0f2fe;
+  --accent-primary: #6366f1; /* Indigo */
+  --accent-secondary: #0ea5e9; /* Sky */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -87,3 +99,31 @@ a {
 .animate-fade-in {
   animation: fadeIn 0.6s ease-out forwards;
 }
+
+/* Spin Animation for LoadingSpinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+  border-style: solid; /* ensure border style */
+}
+
+/* Utilities for LoadingSpinner since Tailwind might be missing */
+.rounded-full { border-radius: 9999px; }
+.border-2 { border-width: 2px; }
+.border-4 { border-width: 4px; }
+.border-t-transparent { border-top-color: transparent; }
+.h-5 { height: 1.25rem; }
+.w-5 { width: 1.25rem; }
+.h-8 { height: 2rem; }
+.w-8 { width: 2rem; }
+.h-12 { height: 3rem; }
+.w-12 { width: 3rem; }
+.flex { display: flex; }
+.justify-center { justify-content: center; }
+.items-center { align-items: center; }
+.border-blue-500 { border-color: #3b82f6; }
+.border-white { border-color: #ffffff; }
+.border-red-400 { border-color: #f87171; }

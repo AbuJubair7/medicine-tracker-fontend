@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '@/services/api';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -106,9 +107,9 @@ export default function SignupPage() {
             type="submit" 
             className="glass-button" 
             disabled={loading}
-            style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', opacity: loading ? 0.7 : 1 }}
+            style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? <LoadingSpinner size="sm" color="border-white" /> : 'Sign Up'}
           </button>
         </form>
 

@@ -28,4 +28,20 @@ api.interceptors.request.use(
   }
 );
 
+// Add a response interceptor to handle auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token is invalid or expired
+      if (typeof window !== 'undefined') {
+        // localStorage.removeItem('auth_token');
+        // window.location.href = '/login';
+        alert('401 Unauthorized detected! Token might be invalid.');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

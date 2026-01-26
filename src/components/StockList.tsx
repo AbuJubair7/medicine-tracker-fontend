@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import api from '@/services/api';
 import StockCard from './StockCard';
 import StockDetailsModal from './StockDetailsModal';
+import LoadingSpinner from './LoadingSpinner';
 
 interface Medicine {
   id: number;
@@ -34,6 +35,7 @@ export default function StockList() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingStockId, setEditingStockId] = useState<number | null>(null);
   const [stockName, setStockName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchStocks = async () => {
     try {
@@ -54,6 +56,7 @@ export default function StockList() {
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       if (editingStockId) {
         await api.patch(`/stock/${editingStockId}`, { name: stockName });
@@ -66,6 +69,8 @@ export default function StockList() {
       fetchStocks();
     } catch (err) {
       alert('Failed to save stock');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -86,10 +91,13 @@ export default function StockList() {
      // Based on typical TypeORM find(), relations might need to be set.
      // Assuming getAll DOES NOT load relations for performance, let's fetch detail.
      try {
-       const res = await api.get(`/stock/get/${stock.id}`);
+       const res = await api.get(`/stock/${stock.id}`);
        setSelectedStock(res.data);
-     } catch (e) {
+     } catch (e: any) {
        console.error("Could not fetch details", e);
+       const status = e.response?.status;
+       const msg = e.response?.data?.error || e.message;
+       alert(`Failed to load stock (Status: ${status}): ${msg}`);
      }
   };
 
@@ -104,7 +112,13 @@ export default function StockList() {
     setIsCreating(true);
   };
 
-  if (loading) return <div style={{textAlign: 'center', marginTop: '3rem', color: 'var(--text-secondary)'}}>Loading stocks...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   const totalStocks = stocks.length;
   // Calculate total medicines just for fun or stats? Optional.
@@ -185,15 +199,16 @@ export default function StockList() {
           gap: '1.5rem' 
         }}>
           {stocks.map(stock => (
-            <StockCard 
-              key={stock.id}
-              id={stock.id}
-              name={stock.name}
-              medicineCount={stock.medicines?.length || 0}
-              onOpen={() => openStock(stock)}
-              onEdit={() => startEditStock(stock)}
-              onDelete={() => handleDeleteStock(stock.id)}
-            />
+            <React.Fragment key={stock.id}>
+              <StockCard 
+                id={stock.id}
+                name={stock.name}
+                medicineCount={stock.medicines?.length || 0}
+                onOpen={() => openStock(stock)}
+                onEdit={() => startEditStock(stock)}
+                onDelete={() => handleDeleteStock(stock.id)}
+              />
+            </React.Fragment>
           ))}
         </div>
       )}

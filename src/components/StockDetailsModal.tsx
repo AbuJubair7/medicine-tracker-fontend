@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '@/services/api';
+import LoadingSpinner from './LoadingSpinner';
 
 interface Medicine {
   id: number;
@@ -22,12 +23,13 @@ interface StockDetailsModalProps {
 export default function StockDetailsModal({ stockId, stockName, medicines, onClose, onUpdate }: StockDetailsModalProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
     name: '',
-    dose: 0,
-    quantity: 0,
+    dose: '' as number | string,
+    quantity: '' as number | string,
     takeMorning: false,
     takeAfternoon: false,
     takeEvening: false
@@ -36,8 +38,8 @@ export default function StockDetailsModal({ stockId, stockName, medicines, onClo
   const resetForm = () => {
     setFormData({
       name: '',
-      dose: 0,
-      quantity: 0,
+      dose: '',
+      quantity: '',
       takeMorning: false,
       takeAfternoon: false,
       takeEvening: false
@@ -48,26 +50,43 @@ export default function StockDetailsModal({ stockId, stockName, medicines, onClo
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
-      await api.post(`/stock/insertMedicine/${stockId}`, formData);
+      // Ensure numeric values are numbers
+      const payload = {
+        ...formData,
+        dose: Number(formData.dose) || 0,
+        quantity: Number(formData.quantity) || 0
+      };
+      await api.post(`/stock/insertMedicine/${stockId}`, payload);
       onUpdate();
       resetForm();
     } catch (error) {
       console.error('Failed to add medicine:', error);
       alert('Failed to add medicine');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingId) return;
+    setSubmitting(true);
     try {
-      await api.patch(`/stock/medicine/${editingId}`, formData);
+      const payload = {
+        ...formData,
+        dose: Number(formData.dose) || 0,
+        quantity: Number(formData.quantity) || 0
+      };
+      await api.patch(`/stock/medicine/${editingId}`, payload);
       onUpdate();
       resetForm();
     } catch (error) {
       console.error('Failed to update medicine:', error);
       alert('Failed to update medicine');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -189,7 +208,7 @@ export default function StockDetailsModal({ stockId, stockName, medicines, onClo
                 type="number"
                 className="glass-input" 
                 value={formData.dose} 
-                onChange={e => setFormData({...formData, dose: Number(e.target.value)})} 
+                onChange={e => setFormData({...formData, dose: e.target.value === '' ? '' : Number(e.target.value)})} 
                 required 
                 style={{ width: '100%' }}
               />
@@ -201,7 +220,7 @@ export default function StockDetailsModal({ stockId, stockName, medicines, onClo
                 type="number"
                 className="glass-input" 
                 value={formData.quantity} 
-                onChange={e => setFormData({...formData, quantity: Number(e.target.value)})} 
+                onChange={e => setFormData({...formData, quantity: e.target.value === '' ? '' : Number(e.target.value)})} 
                 required 
                 style={{ width: '100%' }}
               />
@@ -235,14 +254,22 @@ export default function StockDetailsModal({ stockId, stockName, medicines, onClo
             </div>
 
             <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button type="submit" className="glass-button">Save</button>
-              <button type="button" onClick={resetForm} style={{ 
+              <button 
+                type="submit" 
+                className="glass-button" 
+                disabled={submitting}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: submitting ? 0.7 : 1 }}
+              >
+                {submitting ? <LoadingSpinner size="sm" color="border-white" /> : 'Save'}
+              </button>
+              <button type="button" onClick={resetForm} disabled={submitting} style={{ 
                 background: 'transparent', 
                 border: '1px solid var(--text-secondary)', 
                 color: 'var(--text-secondary)',
                 padding: '0.75rem 1.5rem',
                 borderRadius: '8px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                opacity: submitting ? 0.5 : 1
               }}>Cancel</button>
             </div>
           </form>

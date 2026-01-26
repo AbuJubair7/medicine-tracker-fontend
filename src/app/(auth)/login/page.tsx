@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '@/services/api';
 import { GoogleLogin } from '@react-oauth/google';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -108,9 +109,9 @@ export default function LoginPage() {
             type="submit" 
             className="glass-button" 
             disabled={loading}
-            style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', opacity: loading ? 0.7 : 1 }}
+            style={{ marginTop: '1rem', width: '100%', justifyContent: 'center', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            {loading ? 'Authenticating...' : 'Login'}
+            {loading ? <LoadingSpinner size="sm" color="border-white" /> : 'Login'}
           </button>
         </form>
 
