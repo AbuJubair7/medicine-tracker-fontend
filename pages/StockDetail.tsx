@@ -308,7 +308,8 @@ const StockDetail: React.FC = () => {
                 <input 
                   type="number"
                   min="0"
-                  placeholder="e.g., 500"
+                  step="any"
+                  placeholder="e.g., 500.5"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   value={medForm.dose}
                   onChange={e => setMedForm({...medForm, dose: e.target.value})}
