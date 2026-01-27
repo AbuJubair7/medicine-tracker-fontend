@@ -402,8 +402,8 @@ const MedicineCard = ({ med, onEdit, onDelete }: { med: Medicine; onEdit: () => 
         <div className="mt-3 flex items-center gap-2">
           <span className={`text-2xl font-extrabold ${
              Number(med.quantity) <= 5 ? 'text-red-600' : 
-             Number(med.quantity) <= 10 ? 'text-orange-600' : 
-             'text-slate-700'
+             Number(med.quantity) >= 10 ? 'text-emerald-600' : 
+             'text-orange-500'
           }`}>
             {med.quantity}
           </span>
