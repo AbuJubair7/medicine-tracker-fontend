@@ -53,6 +53,31 @@ The application feels instant because it updates the UI *before* the server resp
 
 ---
 
+## 📦 Setup & Installation
+
+1.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
+
+2.  **Environment Setup**
+    Create `.env` (or rely on defaults):
+    ```env
+    VITE_API_URL=http://localhost:3000
+    ```
+
+3.  **Run Development Server**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Build for Production**
+    ```bash
+    npm run build
+    ```
+
+---
+
 ## 🧠 Master Build Prompt
 
 The contents below are the **Exact Instructions** given to the AI Agent to build this application. Use this reference to understand the intended behavior of every component.
