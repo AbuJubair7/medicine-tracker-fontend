@@ -391,28 +391,34 @@ const StockDetail: React.FC = () => {
 export default StockDetail;
 
 const MedicineCard = ({ med, onEdit, onDelete }: { med: Medicine; onEdit: () => void; onDelete: () => void }) => (
-  <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
-    <div className="flex justify-between items-start mb-2">
-      <h4 className="font-bold text-slate-800 text-lg">{med.name}</h4>
-      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={onEdit} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+  <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative">
+    <div className="flex justify-between items-start mb-3">
+      <div className="flex flex-col">
+        <div className="flex items-baseline gap-2">
+          <h4 className="font-bold text-slate-800 text-lg leading-tight">{med.name}</h4>
+          <span className="text-sm font-medium text-slate-400">{med.dose} mg</span>
+        </div>
+        
+        <div className="mt-3 flex items-center gap-2">
+          <span className={`text-2xl font-extrabold ${
+             Number(med.quantity) <= 5 ? 'text-red-600' : 
+             Number(med.quantity) <= 10 ? 'text-orange-600' : 
+             'text-slate-700'
+          }`}>
+            {med.quantity}
+          </span>
+          <span className="text-sm font-medium text-slate-400 mt-1">left</span>
+        </div>
+      </div>
+
+      <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity absolute top-4 right-4 bg-white pl-2">
+        <button onClick={onEdit} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
           <Edit2 className="w-4 h-4" />
         </button>
-        <button onClick={onDelete} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+        <button onClick={onDelete} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
-    </div>
-    <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-      <span>{med.dose} mg</span>
-      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-        Number(med.quantity) <= 5 ? 'bg-red-50 text-red-600 border border-red-100' : 
-        Number(med.quantity) <= 10 ? 'bg-orange-50 text-orange-600 border border-orange-100' : 
-        'bg-emerald-50 text-emerald-600 border border-emerald-100'
-      }`}>
-        {med.quantity} left
-      </span>
     </div>
   </div>
 );
