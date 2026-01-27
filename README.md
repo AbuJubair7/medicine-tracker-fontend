@@ -31,8 +31,6 @@ frontend/
 │   │   ├── api.ts        # Interceptors (Auto-Logout on 401)
 │   │   ├── authService.ts
 │   │   └── stockService.ts
-│
-└── PROMT.md              # The "Master Prompt" used to generate this app
 ```
 
 ## 🚀 Key Features
@@ -53,28 +51,150 @@ The application feels instant because it updates the UI *before* the server resp
 -   **JWT Handling**: Tokens are stored in `localStorage` and automatically injected into headers via Axios interceptors.
 -   **Route Protection**: Unauthenticated users are strictly redirected to `/login` by the `ProtectedRoute` wrapper.
 
-## 🧠 The "Master Prompt" Strategy
+---
 
-This frontend was built using a high-fidelity prompt strategy designed by **Abu Jubair**. The prompt (available in [PROMT.md](../PROMT.md)) explicitly defined:
-1.  **Exact File Structure**: Preventing AI hallucination of random folders.
-2.  **State Management Rules**: Mandating `Context` for Auth and Local State for UI.
-3.  **Strict Visual Hierarchies**: Defining exactly where distinct elements (Dose vs Quantity) should be placed.
-4.  **Edge Case Handling**: Specifying logic for 401 errors and infinite scroll boundaries.
+## 🧠 Master Build Prompt
 
-## 📦 Setup & Run
+The contents below are the **Exact Instructions** given to the AI Agent to build this application. Use this reference to understand the intended behavior of every component.
 
-1.  **Install Dependencies**
-    ```bash
-    npm install
-    ```
+```markdown
+# Frontend Application Build Prompt
 
-2.  **Environment Setup**
-    Create `.env` (or rely on defaults):
-    ```env
-    VITE_API_URL=http://localhost:3000
-    ```
+You are an expert Senior Frontend Engineer. Your task is to build a robust, production-ready frontend for a **Medicine Tracker Application** called "Dosely".
 
-3.  **Run Development Server**
-    ```bash
-    npm run dev
-    ```
+**Target Stack:**
+-   **Framework:** React (Vite)
+-   **Language:** TypeScript
+-   **Styling:** Tailwind CSS (Vanilla, no external UI libraries like Shadcn/MUI unless specified for icons)
+-   **Icons:** `lucide-react`
+-   **Routing:** `react-router-dom`
+-   **HTTP Client:** `axios`
+-   **State Management:** React Context API + Local State
+-   **Build Tool:** Vite
+
+## 1. Project Structure & Setup
+
+Initialize the project with the following structure:
+frontend/
+├── src/ (or root if preferred, but keep consistent)
+│   ├── components/
+│   │   ├── modals/
+│   │   │   ├── CreateStockModal.tsx
+│   │   │   ├── EditStockModal.tsx
+│   │   │   ├── DeleteStockModal.tsx
+│   │   │   └── DeleteMedicineModal.tsx
+│   │   ├── Layout.tsx
+│   │   ├── Modal.tsx (Generic Reusable Modal)
+│   │   ├── ProtectedRoute.tsx
+│   │   └── StockCardItem.tsx
+│   ├── context/
+│   │   └── AuthContext.tsx
+│   ├── pages/
+│   │   ├── Login.tsx
+│   │   ├── Signup.tsx
+│   │   ├── Dashboard.tsx
+│   │   └── StockDetail.tsx
+│   ├── services/
+│   │   ├── api.ts
+│   │   ├── authService.ts
+│   │   └── stockService.ts
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── types.ts
+
+## 2. Core Logic & State Management
+
+### A. Authentication (`AuthContext + ProtectedRoute`)
+-   **Token Storage:** Store JWT in `localStorage` key `dosely_token`.
+-   **Context:** `AuthContext` provides `token`, `login(token)`, `logout()`, `isAuthenticated`, `loading`.
+-   **Auto-Login:** On mount, check `localStorage` for token. Set `loading` to false after check.
+-   **Protection:** `ProtectedRoute` component checks `isAuthenticated`. If false, redirect to `/login`.
+-   **Interceptor:** In `api.ts`, add an Axios interceptor to:
+    1.  Inject `Authorization: Bearer <token>` on every request.
+    2.  Catch `401 Unauthorized` responses -> `localStorage.removeItem` -> Redirect to login.
+
+### B. Types (`types.ts`)
+Define these exact interfaces:
+-   **User**: `id`, `name`, `email`.
+-   **Medicine**: `id`, `name`, `dose` (string|number), `quantity` (string|number), `takeMorning` (boolean), `takeAfternoon` (boolean), `takeEvening` (boolean).
+-   **Stock**: `id`, `name`, `medicines` (Medicine[]), `medicineCount` (optional number), `createdAt`.
+
+## 3. Page-Specific Implementations
+
+### Page 1: Dashboard (`/dashboard`)
+**Goal:** Display a list of user's medicine stocks (e.g., "Bedroom Cabinet", "Travel Bag").
+
+**Features:**
+1.  **Header:** "Dosely" logo (left), "Logout" button (right).
+2.  **Search Bar:** Large, pill-shaped input. Debounce search queries (500ms) to filter stocks.
+3.  **Add Stock Button:** Opens `CreateStockModal`.
+    -   **Optimistic UI:** When created, prepend the new stock to the list locally *before* or *immediately after* API success to avoid full reload.
+4.  **Stock List (Infinite Scroll):**
+    -   Fetch stocks in pages of 10.
+    -   Use `IntersectionObserver` on the last `StockCardItem` to trigger fetching the next page.
+    -   **Logic:** Append new results to existing state. filtering duplicates if necessary.
+5.  **Stock Card Design:**
+    -   Display Name.
+    -   Display Count: If backend provides `medicineCount`, use it. Else fallback to `medicines.length`.
+    -   **Actions:** "View" (navigates to details) and "Delete" (opens `DeleteStockModal`).
+6.  **Delete Logic:** Optimistically remove the item from the UI list upon confirmation.
+
+### Page 2: Stock Detail (`/stock/:id`)
+**Goal:** Manage medicines within a specific stock.
+
+**Layout:**
+-   **Header:**
+    -   Stock Name (Huge 4xl font).
+    -   **Edit Pencil Icon:** Next to name. Clicks opens `EditStockModal` to rename stock.
+    -   "Back to Dashboard" link.
+    -   "Add Medication" button (opens Modal).
+-   **3-Column Grid:** "Morning", "Noon", "Evening".
+    -   Filter `stock.medicines` based on `takeMorning`, `takeAfternoon`, `takeEvening`.
+    -   A medicine can appear in multiple columns if multiple flags are true.
+
+**Medicine Card Design (Critical):**
+-   **Visuals:** White card, rounded-3xl, shadow-sm.
+-   **Top Row:** Medicine Name (Bold, Left) | Dose (e.g. "500 mg", Gray, Right next to name) | Edit/Delete Action Buttons (Top Right, visible on hover group).
+-   **Bottom Row:** Quantity (Big Font, Left aligned under name).
+-   **Color Coding Logic for Quantity:**
+    -   `<= 5`: **Red** (Text-Red-600)
+    -   `>= 10`: **Green** (Text-Emerald-600)
+    -   Otherwise: **Orange** (Text-Orange-500)
+
+**Add/Edit Medicine Logic:**
+-   **Inputs:** Name (Text), Dose (Number, step="any", min="0"), Quantity (Number, min="0").
+-   **Toggles:** 3 Buttons for Morning/Noon/Evening (Visual toggle style: Gray -> Colored when active).
+-   **Optimization:**
+    -   **Add:** Backend API returns *only* the new Medicine object. Frontend appends it to state: `setStock(prev => ({ ...prev, medicines: [...prev.medicines, newMed] }))`. **Do NOT fetch the whole stock again.**
+    -   **Edit:** Update the specific item in the array locally.
+    -   **Delete:** Filter out the item locally.
+
+## 4. UI/Design System Guidelines
+
+**Aesthetics:** "Premium, Soft, Modern"
+-   **Radius:** Use `rounded-2xl` or `rounded-3xl` extensively.
+-   **Shadows:** Soft, diffused shadows (`shadow-lg shadow-blue-200`).
+-   **Colors:**
+    -   Primary: Blue-600 (Action buttons).
+    -   Backgrounds: Slate-50 (Page bg), White (Cards).
+    -   Time Slots:
+        -   Morning: Orange theme (Orange-50 bg, Orange-500 text).
+        -   Noon: Blue theme.
+        -   Evening: Indigo theme.
+-   **Feedback:**
+    -   Show `Loader2` spinners inside buttons when actions are processing.
+    -   Disable buttons while loading.
+
+## 5. API Services (`services/`)
+
+Create strict service layers.
+-   **stockService.ts**:
+    -   `getAll(page, limit)`
+    -   `getOne(id)`
+    -   `create(name)`
+    -   `update(id, name)` -> For renaming.
+    -   `delete(id)`
+    -   `addMedicine(stockId, payload)` -> Returns `Promise<Medicine>`
+    -   `editMedicine(medId, payload)`
+    -   `deleteMedicine(medId)`
+```
