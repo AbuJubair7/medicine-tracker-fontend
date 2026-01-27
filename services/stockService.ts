@@ -26,7 +26,7 @@ export const stockService = {
     await api.delete(`/stock/${id}`);
   },
   addMedicine: async (stockId: string | number, med: Omit<Medicine, 'id'>) => {
-    const response = await api.post<Stock>(`/stock/insertMedicine/${stockId}`, med);
+    const response = await api.post<Medicine>(`/stock/insertMedicine/${stockId}`, med);
     return response.data;
   },
   editMedicine: async (medId: string | number, med: Partial<Omit<Medicine, 'id'>>) => {

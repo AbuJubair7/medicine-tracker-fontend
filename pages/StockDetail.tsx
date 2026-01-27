@@ -6,6 +6,7 @@ import { stockService } from '../services/stockService';
 import { Stock, Medicine } from '../types';
 import Modal from '../components/Modal';
 import DeleteMedicineModal from '../components/modals/DeleteMedicineModal';
+import EditStockModal from '../components/modals/EditStockModal';
 
 const StockDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +15,10 @@ const StockDetail: React.FC = () => {
   const [isMedModalOpen, setIsMedModalOpen] = useState(false);
   const [editingMed, setEditingMed] = useState<Medicine | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  
+  // Edit Stock Name State
+  const [isEditStockModalOpen, setIsEditStockModalOpen] = useState(false);
+  const [editStockLoading, setEditStockLoading] = useState(false);
   
   // Medicine Form State
   const [medForm, setMedForm] = useState({
@@ -80,8 +85,14 @@ const StockDetail: React.FC = () => {
           };
         });
       } else {
-        const updatedStock = await stockService.addMedicine(id, payload);
-        setStock(updatedStock);
+        const newMedicine = await stockService.addMedicine(id, payload);
+        setStock(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            medicines: [...(prev.medicines || []), newMedicine]
+          };
+        });
       }
       setIsMedModalOpen(false);
       resetForm();
@@ -89,6 +100,20 @@ const StockDetail: React.FC = () => {
       console.error('Failed to save medicine', err);
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleRenameStock = async (newName: string) => {
+    if (!id || !stock) return;
+    try {
+      setEditStockLoading(true);
+      const updatedStock = await stockService.update(id, newName);
+      setStock(prev => prev ? { ...prev, name: updatedStock.name } : null);
+      setIsEditStockModalOpen(false);
+    } catch (err) {
+      console.error('Failed to update stock name', err);
+    } finally {
+      setEditStockLoading(false);
     }
   };
 
@@ -162,6 +187,12 @@ const StockDetail: React.FC = () => {
               <img src="/favicon.svg" alt="Stock Icon" className="w-12 h-12" />
             </div>
             <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">{stock.name}</h1>
+            <button 
+              onClick={() => setIsEditStockModalOpen(true)}
+              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+            >
+              <Edit2 className="w-5 h-5" />
+            </button>
           </div>
           <p className="text-slate-500 font-medium">Inventory of {stock.medicines?.length || 0} medications</p>
         </div>
@@ -275,8 +306,9 @@ const StockDetail: React.FC = () => {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Dose (mg/ml)</label>
                 <input 
-                  type="text"
-                  placeholder="e.g., 500mg"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 500"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   value={medForm.dose}
                   onChange={e => setMedForm({...medForm, dose: e.target.value})}
@@ -285,8 +317,9 @@ const StockDetail: React.FC = () => {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Quantity</label>
                 <input 
-                  type="text"
-                  placeholder="e.g., 20 pills"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 20"
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   value={medForm.quantity}
                   onChange={e => setMedForm({...medForm, quantity: e.target.value})}
@@ -341,6 +374,14 @@ const StockDetail: React.FC = () => {
         onClose={() => setDeleteMedModalOpen(false)}
         onConfirm={confirmDeleteMed}
         loading={deleteLoading}
+      />
+      
+      <EditStockModal
+        isOpen={isEditStockModalOpen}
+        onClose={() => setIsEditStockModalOpen(false)}
+        onSubmit={handleRenameStock}
+        loading={editStockLoading}
+        initialName={stock.name}
       />
     </div>
   );
