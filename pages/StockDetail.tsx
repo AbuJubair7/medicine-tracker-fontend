@@ -5,6 +5,7 @@ import { ChevronLeft, Plus, Edit2, Trash2, Pill, Sun, Clock, Moon, Loader2, Aler
 import { stockService } from '../services/stockService';
 import { Stock, Medicine } from '../types';
 import Modal from '../components/Modal';
+import DeleteMedicineModal from '../components/modals/DeleteMedicineModal';
 
 const StockDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -69,13 +70,21 @@ const StockDetail: React.FC = () => {
       };
 
       if (editingMed) {
-        await stockService.editMedicine(editingMed.id, payload);
+        const updatedMed = await stockService.editMedicine(editingMed.id, payload);
+        // Optimistically update the list
+        setStock(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            medicines: prev.medicines.map(m => m.id === updatedMed.id ? updatedMed : m)
+          };
+        });
       } else {
-        await stockService.addMedicine(id, payload);
+        const updatedStock = await stockService.addMedicine(id, payload);
+        setStock(updatedStock);
       }
       setIsMedModalOpen(false);
       resetForm();
-      fetchStock();
     } catch (err) {
       console.error('Failed to save medicine', err);
     } finally {
@@ -96,13 +105,34 @@ const StockDetail: React.FC = () => {
     setIsMedModalOpen(true);
   };
 
-  const handleDeleteMed = async (medId: number) => {
-    if (!confirm('Are you sure you want to remove this medicine?')) return;
+  // Delete Medicine Modal State
+  const [deleteMedModalOpen, setDeleteMedModalOpen] = useState(false);
+  const [medToDelete, setMedToDelete] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDeleteClick = (medId: number) => {
+    setMedToDelete(medId);
+    setDeleteMedModalOpen(true);
+  };
+
+  const confirmDeleteMed = async () => {
+    if (!medToDelete) return;
     try {
-      await stockService.deleteMedicine(medId);
-      fetchStock();
+      setDeleteLoading(true);
+      await stockService.deleteMedicine(medToDelete);
+      setStock(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          medicines: prev.medicines.filter(m => m.id !== medToDelete)
+        };
+      });
+      setDeleteMedModalOpen(false);
     } catch (err) {
       console.error('Failed to delete medicine', err);
+    } finally {
+      setDeleteLoading(false);
+      setMedToDelete(null); 
     }
   };
 
@@ -164,7 +194,7 @@ const StockDetail: React.FC = () => {
                 <MedicineCard 
                   med={med} 
                   onEdit={() => handleEditClick(med)} 
-                  onDelete={() => handleDeleteMed(med.id)}
+                  onDelete={() => handleDeleteClick(med.id)}
                 />
               </React.Fragment>
             ))}
@@ -188,7 +218,7 @@ const StockDetail: React.FC = () => {
                 <MedicineCard 
                   med={med} 
                   onEdit={() => handleEditClick(med)} 
-                  onDelete={() => handleDeleteMed(med.id)}
+                  onDelete={() => handleDeleteClick(med.id)}
                 />
               </React.Fragment>
             ))}
@@ -212,7 +242,7 @@ const StockDetail: React.FC = () => {
                 <MedicineCard 
                   med={med} 
                   onEdit={() => handleEditClick(med)} 
-                  onDelete={() => handleDeleteMed(med.id)}
+                  onDelete={() => handleDeleteClick(med.id)}
                 />
               </React.Fragment>
             ))}
@@ -305,6 +335,13 @@ const StockDetail: React.FC = () => {
           </button>
         </form>
       </Modal>
+
+      <DeleteMedicineModal
+        isOpen={deleteMedModalOpen}
+        onClose={() => setDeleteMedModalOpen(false)}
+        onConfirm={confirmDeleteMed}
+        loading={deleteLoading}
+      />
     </div>
   );
 };

@@ -3,8 +3,11 @@ import api from './api';
 import { Stock, Medicine } from '../types';
 
 export const stockService = {
-  getAll: async () => {
-    const response = await api.get<Stock[]>('/stock/getAll');
+  getAll: async (page: number = 1, limit: number = 10) => {
+    // Backend returns paginated response: { data: Stock[], total: number, ... }
+    const response = await api.get<{ data: Stock[], total: number }>('/stock/getAll', {
+      params: { page, limit }
+    });
     return response.data;
   },
   getOne: async (id: string | number) => {

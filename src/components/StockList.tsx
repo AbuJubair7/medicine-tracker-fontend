@@ -1,10 +1,32 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import api from '@/services/api';
 import StockCard from './StockCard';
 import StockDetailsModal from './StockDetailsModal';
 import LoadingSpinner from './LoadingSpinner';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+  state = { hasError: false, error: null };
+  readonly props!: { children: React.ReactNode };
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '2rem', color: 'red', border: '1px solid red', margin: '2rem' }}>
+          <h2>Something went wrong in StockList.</h2>
+          <pre>{this.state.error?.toString()}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface Medicine {
   id: number;
@@ -23,36 +45,111 @@ interface Stock {
   createdAt: string;
 }
 
-export default function StockList() {
+function StockListContent() {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
-  // Modal state
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const LIMIT = 10;
+
+  // Modal & Edit State
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
-  
-  // Create/Edit Stock state
   const [isCreating, setIsCreating] = useState(false);
   const [editingStockId, setEditingStockId] = useState<number | null>(null);
   const [stockName, setStockName] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchStocks = async () => {
+  const fetchStocks = async (pageNum: number, isReset = false) => {
     try {
-      const response = await api.get('/stock/getAll');
-      setStocks(response.data);
+      if (isReset) {
+        setLoading(true);
+      } else {
+        setIsFetchingMore(true);
+      }
+
+      const response = await api.get('/stock/getAll', {
+        params: { page: pageNum, limit: LIMIT },
+      });
+
+      console.log('API Fetch Result:', response.data);
+
+      const responseData = response.data;
+      let newStocks = responseData?.data;
+      const total = responseData?.total || 0;
+
+      // STRICT VALIDATION
+      if (!Array.isArray(newStocks)) {
+        console.warn('Expected array for newStocks but got:', newStocks);
+        if (Array.isArray(responseData)) {
+            newStocks = responseData; // Old Backend Format Fallback
+        } else {
+            newStocks = [];
+        }
+      }
+
+      if (isReset) {
+        setStocks(newStocks);
+      } else {
+        setStocks((prev) => {
+            // Safety Check for prev
+            if (!Array.isArray(prev)) return newStocks;
+            const existingIds = new Set(prev.map((s) => s.id));
+            const filtered = newStocks.filter((s: Stock) => s && !existingIds.has(s.id));
+            return [...prev, ...filtered];
+        });
+      }
+
+      // Check if we reached the end
+      if (isReset) {
+         setHasMore(newStocks.length < total && newStocks.length >= LIMIT);
+      } else {
+         setHasMore((stocks.length + newStocks.length) < total);
+      }
+      
       setError('');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("Fetch Stocks Error:", err);
       setError('Failed to load stocks.');
     } finally {
       setLoading(false);
+      setIsFetchingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchStocks();
+    fetchStocks(1, true);
   }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingMore && !loading) {
+            setPage((prev) => {
+            const nextPage = prev + 1;
+            fetchStocks(nextPage, false);
+            return nextPage;
+          });
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, isFetchingMore, loading]);
+
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +163,9 @@ export default function StockList() {
       setStockName('');
       setIsCreating(false);
       setEditingStockId(null);
-      fetchStocks();
+      setPage(1);
+      setHasMore(true);
+      fetchStocks(1, true);
     } catch (err) {
       alert('Failed to save stock');
     } finally {
@@ -75,35 +174,26 @@ export default function StockList() {
   };
 
   const handleDeleteStock = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this stock? All medicines inside will be lost.')) return;
+    if (!confirm('Are you sure?')) return;
     try {
       await api.delete(`/stock/${id}`);
-      fetchStocks();
+      setStocks((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       alert('Failed to delete stock');
     }
   };
 
   const openStock = async (stock: Stock) => {
-     // Fetch fresh details including medicines?
-     // The getAll might not return medicines array populated deeply or correctly if not configured.
-     // Let's verify by fetching individual stock if needed, or rely on getAll if it populates.
-     // Based on typical TypeORM find(), relations might need to be set.
-     // Assuming getAll DOES NOT load relations for performance, let's fetch detail.
      try {
        const res = await api.get(`/stock/${stock.id}`);
        setSelectedStock(res.data);
      } catch (e: any) {
-       console.error("Could not fetch details", e);
-       const status = e.response?.status;
-       const msg = e.response?.data?.error || e.message;
-       alert(`Failed to load stock (Status: ${status}): ${msg}`);
+       alert(`Failed to load stock: ${e.message}`);
      }
   };
 
   const handleCloseModal = () => {
     setSelectedStock(null);
-    fetchStocks(); // Refresh numbers
   };
 
   const startEditStock = (stock: Stock) => {
@@ -112,7 +202,7 @@ export default function StockList() {
     setIsCreating(true);
   };
 
-  if (loading) {
+  if (loading && page === 1) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
         <LoadingSpinner size="lg" />
@@ -120,15 +210,14 @@ export default function StockList() {
     );
   }
 
-  const totalStocks = stocks.length;
-  // Calculate total medicines just for fun or stats? Optional.
-  
+  const totalStocks = Array.isArray(stocks) ? stocks.length : 0;
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h2 style={{ fontSize: '2rem', color: 'var(--text-primary)' }}>My Stocks</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>Total: {totalStocks} {totalStocks === 1 ? 'List' : 'Lists'}</p>
+          <p style={{ color: 'var(--text-secondary)' }}>Showing: {totalStocks} Lists</p>
         </div>
         <button 
           className="glass-button"
@@ -139,66 +228,29 @@ export default function StockList() {
       </div>
 
       {isCreating && (
-        <div style={{ 
-          marginBottom: '2rem', 
-          padding: '1.5rem', 
-          background: 'rgba(255,255,255,0.05)', 
-          borderRadius: '12px',
-          maxWidth: '500px'
-        }}>
-          <h3 style={{ marginBottom: '1rem' }}>{editingStockId ? 'Edit Stock Name' : 'Create New Stock'}</h3>
+        <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.05)', marginBottom: '2rem', borderRadius: '12px' }}>
           <form onSubmit={handleCreateSubmit} style={{ display: 'flex', gap: '1rem' }}>
             <input 
               className="glass-input"
               value={stockName}
               onChange={e => setStockName(e.target.value)}
-              placeholder="e.g. Grandma's Meds, Emergency Kit..."
+              placeholder="Stock name..."
               required
-              autoFocus
               style={{ flex: 1 }}
             />
             <button type="submit" className="glass-button">Save</button>
-            <button 
-              type="button" 
-              onClick={() => { setIsCreating(false); setEditingStockId(null); }}
-              style={{ 
-                background: 'transparent',
-                border: '1px solid var(--text-secondary)',
-                color: 'var(--text-secondary)',
-                padding: '0 1.5rem',
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              Cancel
-            </button>
+            <button type="button" onClick={() => setIsCreating(false)} className="glass-button" style={{ background: 'transparent', border: '1px solid gray' }}>Cancel</button>
           </form>
         </div>
       )}
 
-      {stocks.length === 0 && !isCreating ? (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '4rem 2rem', 
-          background: 'rgba(255,255,255,0.02)', 
-          borderRadius: '16px',
-          border: '2px dashed rgba(255,255,255,0.1)'
-        }}>
-          <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>No stocks found</h3>
-          <button 
-            className="glass-button"
-            onClick={() => setIsCreating(true)}
-          >
-            Create your first Stock
-          </button>
+      {totalStocks === 0 && !loading && !isCreating ? (
+        <div style={{ textAlign: 'center', padding: '4rem' }}>
+          <h3>No stocks found</h3>
         </div>
       ) : (
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
-          gap: '1.5rem' 
-        }}>
-          {stocks.map(stock => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
+          {Array.isArray(stocks) && stocks.filter(s => s && s.id).map(stock => (
             <React.Fragment key={stock.id}>
               <StockCard 
                 id={stock.id}
@@ -213,6 +265,10 @@ export default function StockList() {
         </div>
       )}
 
+      <div ref={observerTarget} style={{ height: '20px', margin: '20px 0', textAlign: 'center' }}>
+        {isFetchingMore && <LoadingSpinner size="sm" />}
+      </div>
+
       {selectedStock && (
         <StockDetailsModal 
           stockId={selectedStock.id}
@@ -223,5 +279,14 @@ export default function StockList() {
         />
       )}
     </div>
+  );
+}
+
+// Export the Wrapped Component
+export default function StockList() {
+  return (
+    <ErrorBoundary>
+      <StockListContent />
+    </ErrorBoundary>
   );
 }

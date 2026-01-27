@@ -1,46 +1,83 @@
 
 import React, { useEffect, useState } from 'react';
+import { useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Package, ArrowRight, Loader2, Search } from 'lucide-react';
+import { Plus, Package, Loader2, Search } from 'lucide-react';
 import { stockService } from '../services/stockService';
 import { Stock } from '../types';
-import Modal from '../components/Modal';
+import StockCardItem from '../components/StockCardItem';
+import CreateStockModal from '../components/modals/CreateStockModal';
+import DeleteStockModal from '../components/modals/DeleteStockModal';
 
 const Dashboard: React.FC = () => {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newStockName, setNewStockName] = useState('');
+  // removed newStockName state
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const observer = useRef<IntersectionObserver | null>(null);
+  
   const navigate = useNavigate();
 
-  const fetchStocks = async () => {
+  const lastStockElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading || isFetchingMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, isFetchingMore, hasMore]);
+
+  const fetchStocks = async (pageNum: number, isReset: boolean = false) => {
     try {
-      setLoading(true);
-      const data = await stockService.getAll();
-      setStocks(data);
+      if (isReset) {
+        setLoading(true);
+      } else {
+        setIsFetchingMore(true);
+      }
+
+      const { data, total } = await stockService.getAll(pageNum, 10);
+      
+      setStocks(prev => {
+        if (isReset) return data;
+        // Avoid duplicates if strict mode double-invokes
+        const newIds = new Set(data.map(d => d.id));
+        return [...prev, ...data.filter(d => !prev.some(p => p.id === d.id))];
+      });
+
+      setHasMore(data.length > 0 && (isReset ? data.length : stocks.length + data.length) < total );
     } catch (err) {
       console.error('Failed to fetch stocks', err);
     } finally {
       setLoading(false);
+      setIsFetchingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchStocks();
+    fetchStocks(1, true);
   }, []);
 
-  const handleCreateStock = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newStockName.trim()) return;
-    
+  useEffect(() => {
+    if (page > 1) {
+      fetchStocks(page, false);
+    }
+  }, [page]);
+
+  const handleCreateStock = async (name: string) => {
     try {
       setActionLoading(true);
-      await stockService.create(newStockName);
-      setNewStockName('');
+      const newStock = await stockService.create(name);
+      setStocks(prev => [newStock, ...prev]);
       setIsModalOpen(false);
-      fetchStocks();
     } catch (err) {
       console.error('Failed to create stock', err);
     } finally {
@@ -51,24 +88,24 @@ const Dashboard: React.FC = () => {
   // Delete Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [stockToDelete, setStockToDelete] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const confirmDelete = async () => {
     if (!stockToDelete) return;
     
-    // Optimistic update
-    const previousStocks = [...stocks];
-    setStocks(stocks.filter(s => s.id !== parseInt(stockToDelete)));
-    setIsModalOpen(false); // Close create modal if open
-    setDeleteModalOpen(false);
-
     try {
+      setDeleteLoading(true);
       await stockService.delete(stockToDelete);
+      
+      // Update UI after success
+      setStocks(prev => prev.filter(s => s.id !== parseInt(stockToDelete)));
+      setDeleteModalOpen(false);
+      setIsModalOpen(false); 
     } catch (err) {
       console.error('Failed to delete stock', err);
-      // Revert if failed
-      setStocks(previousStocks);
       alert('Failed to delete stock');
     } finally {
+      setDeleteLoading(false);
       setStockToDelete(null);
     }
   };
@@ -134,35 +171,25 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStocks.map((stock) => (
-            <div 
-              key={stock.id}
-              onClick={() => navigate(`/stock/${stock.id}`)}
-              className="group bg-white border border-slate-100 p-6 rounded-[2rem] hover:shadow-xl hover:shadow-slate-200/50 transition-all cursor-pointer relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
-                  onClick={(e) => handleDeleteClick(e, stock.id)}
-                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="bg-blue-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                <Package className="w-6 h-6 text-blue-600 group-hover:text-white" />
-              </div>
-              
-              <h3 className="text-xl font-bold text-slate-800 mb-1">{stock.name}</h3>
-              <p className="text-slate-500 font-medium">{stock.medicines?.length || 0} items stored</p>
-              
-              <div className="mt-8 flex items-center text-blue-600 font-bold text-sm gap-1 translate-x-[-4px] group-hover:translate-x-0 transition-transform">
-                View Details
-                <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </div>
-          ))}
+          {filteredStocks.map((stock, index) => {
+            const isLast = filteredStocks.length === index + 1;
+            return (
+              <StockCardItem
+                key={stock.id}
+                ref={isLast ? lastStockElementRef : undefined}
+                stock={stock}
+                onClick={() => navigate(`/stock/${stock.id}`)}
+                onDeleteClick={handleDeleteClick}
+              />
+            );
+          })}
         </div>
+      )}
+      
+      {isFetchingMore && (
+         <div className="flex justify-center py-4">
+           <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+         </div>
       )}
 
       {/* FAB for mobile */}
@@ -174,60 +201,20 @@ const Dashboard: React.FC = () => {
       </button>
 
       {/* Create Stock Modal */}
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        title="New Medicine Stock"
-      >
-        <form onSubmit={handleCreateStock} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Stock Name</label>
-            <input 
-              required
-              type="text"
-              placeholder="e.g., Bathroom Cabinet, Work Desk"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-              value={newStockName}
-              onChange={(e) => setNewStockName(e.target.value)}
-            />
-          </div>
-          <button 
-            type="submit"
-            disabled={actionLoading}
-            className="w-full py-3.5 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50"
-          >
-            {actionLoading && <Loader2 className="w-5 h-5 animate-spin" />}
-            Create Stock
-          </button>
-        </form>
-      </Modal>
+      <CreateStockModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateStock}
+        loading={actionLoading}
+      />
 
       {/* Delete Confirmation Modal */}
-      <Modal
+      <DeleteStockModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title="Delete Stock?"
-      >
-        <div className="space-y-6">
-          <p className="text-slate-600">
-            Are you sure you want to delete this stock? All medicines inside will be permanently removed. This action cannot be undone.
-          </p>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setDeleteModalOpen(false)}
-              className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={confirmDelete}
-              className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-red-200"
-            >
-              Yes, Delete
-            </button>
-          </div>
-        </div>
-      </Modal>
+        onConfirm={confirmDelete}
+        loading={deleteLoading}
+      />
     </div>
   );
 };
