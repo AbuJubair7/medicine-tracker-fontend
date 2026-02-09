@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Prioritize environment variable, fallback to the provided Vercel backend URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://medicine-tracker-backend.vercel.app';
+const API_URL = process.env.NODE_ENV !== 'development' ? process.env.NEXT_PUBLIC_API_URL : 'http://localhost:3000';
 
 const api = axios.create({
   baseURL: API_URL,
