@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_PORT=8000
+    env_file:
+      - .env.local
+
+  prod:
+    build:
+      context: .
+      target: production
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://medicine-tracker-backend.vercel.app}
+        - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-408990489269-cnd6ds9okm6mrulvp6f2fuuq7dn8l0v3.apps.googleusercontent.com}
+    ports:
+      - "8080:80"
+    restart: always

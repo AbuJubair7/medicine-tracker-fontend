@@ -223,3 +223,28 @@ Create strict service layers.
     -   `editMedicine(medId, payload)`
     -   `deleteMedicine(medId)`
 ```
+
+## 6. 🚀 Deployment & Docker
+
+### 🐳 Docker Build Targets
+This project uses multi-stage builds. When deploying, you can target specific environments:
+
+**Development:**
+```bash
+docker build --target development -t medicine-tracker-dev .
+```
+
+**Production (Default):**
+```bash
+docker build --target production -t medicine-tracker-prod .
+```
+> **Note on Nginx:** The production build uses **Nginx** (Alpine) to serve the static files on port 80. It includes a custom `nginx.conf` to handle React routing (SPA fallback to `index.html`).
+
+### 🔐 Security Notes
+- **Environment Variables**:
+  - We removed sensitive keys like `GEMINI_API_KEY` from `vite.config.ts`.
+  - Local `.env` files are **ignored** in `.dockerignore` to prevent secret leaks in production images.
+- **Runtime Injection**:
+  - Use `env_file` in `docker-compose.yml` for local development.
+  - Configure environment variables in your deployment dashboard (e.g., Render) for production.
+
