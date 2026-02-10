@@ -248,3 +248,29 @@ docker build --target production -t medicine-tracker-prod .
   - Use `env_file` in `docker-compose.yml` for local development.
   - Configure environment variables in your deployment dashboard (e.g., Render) for production.
 
+---
+
+## 🌐 API Endpoints & Environment Variables
+
+The `.env` file contains all the environment variables and API endpoint configurations used by the frontend.
+
+### Active Environment Variables
+
+| Variable | Value | Description |
+|---|---|---|
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | `****-...googleusercontent.com` | Google OAuth 2.0 Client ID for social login |
+| `NEXT_PUBLIC_API_URL` | `http://dosely-api.indevs.in` | The **currently active** backend API URL used by the app |
+
+### API Hosts for Different Deployments
+
+The backend is deployed across multiple platforms. Switch `NEXT_PUBLIC_API_URL` to any of these depending on your target environment:
+
+| Env Key | URL | Platform |
+|---|---|---|
+| `VERCEL_API` | `https://dosely-api.vercel.app` | Vercel |
+| `RENDER_API` | `https://dosely-api.onrender.com` | Render |
+| `STACKRYZE_API` | `http://dosely-api.indevs.in` | StackRyze → Microsoft Azure VPS |
+
+> [!TIP]
+> To switch environments, update `NEXT_PUBLIC_API_URL` in your `.env` to the desired host URL from the table above.
+
