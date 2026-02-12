@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
@@ -18,10 +18,10 @@ export default function Home() {
           Manage your stock with futuristic efficiency.
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <Link href="/login" className="glass-button">
+          <Link to="/login" className="glass-button">
             Login
           </Link>
-          <Link href="/signup" className="glass-button" style={{ background: 'transparent', border: '1px solid var(--accent-secondary)' }}>
+          <Link to="/signup" className="glass-button" style={{ background: 'transparent', border: '1px solid var(--accent-secondary)' }}>
             Sign Up
           </Link>
         </div>

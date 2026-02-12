@@ -1,14 +1,14 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, type FC, type FormEvent, type ChangeEvent, Fragment } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Edit2, Trash2, Pill, Sun, Clock, Moon, Loader2, AlertCircle } from 'lucide-react';
-import { stockService } from '../services/stockService';
-import { Stock, Medicine } from '../types';
-import Modal from '../components/Modal';
-import DeleteMedicineModal from '../components/modals/DeleteMedicineModal';
+import { stockService } from '@/services/stockService';
+import { Stock, Medicine } from '@/types';
+import Modal from '@/components/Modal';
+import DeleteMedicineModal from '@/components/modals/DeleteMedicineModal';
 import EditStockModal from '../components/modals/EditStockModal';
 
-const StockDetail: React.FC = () => {
+const StockDetail: FC = () => {
   const { id } = useParams<{ id: string }>();
   const [stock, setStock] = useState<Stock | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +62,7 @@ const StockDetail: React.FC = () => {
     setEditingMed(null);
   };
 
-  const handleAddMedicine = async (e: React.FormEvent) => {
+  const handleAddMedicine = async (e: FormEvent) => {
     e.preventDefault();
     if (!id) return;
     
@@ -221,13 +221,13 @@ const StockDetail: React.FC = () => {
           </div>
           <div className="space-y-4">
             {stock.medicines?.filter(m => m.takeMorning).map(med => (
-              <React.Fragment key={`${med.id}-morning`}>
+              <Fragment key={`${med.id}-morning`}>
                 <MedicineCard 
                   med={med} 
                   onEdit={() => handleEditClick(med)} 
                   onDelete={() => handleDeleteClick(med.id)}
                 />
-              </React.Fragment>
+              </Fragment>
             ))}
             {(!stock.medicines || !stock.medicines.some(m => m.takeMorning)) && (
               <EmptyState message="No morning meds" />
@@ -245,13 +245,13 @@ const StockDetail: React.FC = () => {
           </div>
           <div className="space-y-4">
             {stock.medicines?.filter(m => m.takeAfternoon).map(med => (
-              <React.Fragment key={`${med.id}-noon`}>
+              <Fragment key={`${med.id}-noon`}>
                 <MedicineCard 
                   med={med} 
                   onEdit={() => handleEditClick(med)} 
                   onDelete={() => handleDeleteClick(med.id)}
                 />
-              </React.Fragment>
+              </Fragment>
             ))}
             {(!stock.medicines || !stock.medicines.some(m => m.takeAfternoon)) && (
               <EmptyState message="No noon meds" />
@@ -269,13 +269,13 @@ const StockDetail: React.FC = () => {
           </div>
           <div className="space-y-4">
             {stock.medicines?.filter(m => m.takeEvening).map(med => (
-              <React.Fragment key={`${med.id}-evening`}>
+              <Fragment key={`${med.id}-evening`}>
                 <MedicineCard 
                   med={med} 
                   onEdit={() => handleEditClick(med)} 
                   onDelete={() => handleDeleteClick(med.id)}
                 />
-              </React.Fragment>
+              </Fragment>
             ))}
             {(!stock.medicines || !stock.medicines.some(m => m.takeEvening)) && (
               <EmptyState message="No evening meds" />

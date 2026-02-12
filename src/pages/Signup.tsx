@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import { useState, type FC, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
+import { authService } from '@/services/authService';
 import { Pill, User, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 
-const Signup: React.FC = () => {
+const Signup: FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +13,7 @@ const Signup: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
