@@ -1,9 +1,10 @@
 import Navbar from '@/components/Navbar';
+import type { ReactNode } from 'react';
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div style={{ minHeight: '100vh', paddingBottom: '2rem' }}>

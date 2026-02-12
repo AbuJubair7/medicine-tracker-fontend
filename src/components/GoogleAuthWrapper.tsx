@@ -1,8 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-export default function GoogleAuthWrapper({ children }: { children: React.ReactNode }) {
+export default function GoogleAuthWrapper({ children }: { children: ReactNode }) {
   // Use environment variable for Client ID, with a fallback or empty string to prevent build error if missing,
   // but functionality will fail if not provided. logic handles in runtime.
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';

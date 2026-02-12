@@ -1,18 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '@/services/api';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function SignupPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -24,7 +23,7 @@ export default function SignupPage() {
 
       if (token) {
         // Redirect to login page after successful signup
-        router.push('/login');
+        navigate('/login');
       } else {
         // Fallback if data structure is different
         setError('Signup successful but unexpected response.');
@@ -115,7 +114,7 @@ export default function SignupPage() {
 
         <p style={{ marginTop: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
           Already have an account?{' '}
-          <Link href="/login" style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
+          <Link to="/login" style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
             Login
           </Link>
         </p>

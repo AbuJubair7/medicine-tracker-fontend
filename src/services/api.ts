@@ -1,44 +1,30 @@
+
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// Prioritize environment variable, fallback to the provided Vercel backend URL
+const API_URL = process.env.NODE_ENV !== 'development' ? process.env.NEXT_PUBLIC_API_URL : 'http://localhost:3000';
+console.log("URL", API_URL);
+console.log("ENV", process.env.NODE_ENV);
+
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
-// Add a request interceptor to attach the token
-api.interceptors.request.use(
-  (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('dosely_token');
-      if (token && config.headers) {
-        // Backend middleware expects just the token or Bearer?
-        // Checking authMiddleware... usually it extracts from Authorization header.
-        // I will assume Bearer scheme for standard practice, but verify if code available.
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('dosely_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
-// Add a response interceptor to handle auth errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Token is invalid or expired
-      if (typeof window !== 'undefined') {
-        // localStorage.removeItem('auth_token');
-        // window.location.href = '/login';
-        alert('401 Unauthorized detected! Token might be invalid.');
-      }
+    if (error.response?.status === 401) {
+      localStorage.removeItem('dosely_token');
+      window.location.hash = '/login';
     }
     return Promise.reject(error);
   }

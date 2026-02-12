@@ -1,6 +1,6 @@
 
 import api from './api';
-import { Stock, Medicine } from '../types';
+import { Stock, Medicine } from '@/types';
 
 export const stockService = {
   getAll: async (page: number = 1, limit: number = 10) => {

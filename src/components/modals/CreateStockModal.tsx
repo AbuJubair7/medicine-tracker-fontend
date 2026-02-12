@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent, type FC } from 'react';
 import { Loader2 } from 'lucide-react';
 import Modal from '../Modal';
 
@@ -9,10 +9,10 @@ interface CreateStockModalProps {
   loading: boolean;
 }
 
-const CreateStockModal: React.FC<CreateStockModalProps> = ({ isOpen, onClose, onSubmit, loading }) => {
+const CreateStockModal: FC<CreateStockModalProps> = ({ isOpen, onClose, onSubmit, loading }) => {
   const [stockName, setStockName] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!stockName.trim()) return;
     await onSubmit(stockName);

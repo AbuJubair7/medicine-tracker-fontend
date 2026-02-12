@@ -1,15 +1,15 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Package, Loader2, Search } from 'lucide-react';
-import { stockService } from '../services/stockService';
-import { Stock } from '../types';
-import StockCardItem from '../components/StockCardItem';
-import CreateStockModal from '../components/modals/CreateStockModal';
-import DeleteStockModal from '../components/modals/DeleteStockModal';
+import { stockService } from '@/services/stockService';
+import { Stock } from '@/types';
+import StockCardItem from '@/components/StockCardItem';
+import CreateStockModal from '@/components/modals/CreateStockModal';
+import DeleteStockModal from '@/components/modals/DeleteStockModal';
 
-const Dashboard: React.FC = () => {
+const Dashboard: FC = () => {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

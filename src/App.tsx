@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { type FC } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
@@ -9,7 +9,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import StockDetail from './pages/StockDetail';
 
-const App: React.FC = () => {
+const App: FC = () => {
   return (
     <AuthProvider>
       <Routes>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent, type FC } from 'react';
 import { Loader2 } from 'lucide-react';
 import Modal from '../Modal';
 
@@ -10,14 +10,14 @@ interface EditStockModalProps {
   initialName: string;
 }
 
-const EditStockModal: React.FC<EditStockModalProps> = ({ isOpen, onClose, onSubmit, loading, initialName }) => {
+const EditStockModal: FC<EditStockModalProps> = ({ isOpen, onClose, onSubmit, loading, initialName }) => {
   const [stockName, setStockName] = useState(initialName);
 
   useEffect(() => {
     setStockName(initialName);
   }, [initialName, isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!stockName.trim()) return;
     await onSubmit(stockName);

@@ -1,15 +1,15 @@
-import React from 'react';
+import { type FC } from 'react';
 import { Loader2 } from 'lucide-react';
 import Modal from '../Modal';
 
-interface DeleteMedicineModalProps {
+interface DeleteStockModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   loading: boolean;
 }
 
-const DeleteMedicineModal: React.FC<DeleteMedicineModalProps> = ({ 
+const DeleteStockModal: FC<DeleteStockModalProps> = ({ 
   isOpen, 
   onClose, 
   onConfirm, 
@@ -19,11 +19,11 @@ const DeleteMedicineModal: React.FC<DeleteMedicineModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Remove Medicine?"
+      title="Delete Stock?"
     >
       <div className="space-y-6">
         <p className="text-slate-600">
-          Are you sure you want to remove this medicine from your schedule? This action cannot be undone.
+          Are you sure you want to delete this stock? All medicines inside will be permanently removed. This action cannot be undone.
         </p>
         <div className="flex gap-3">
           <button
@@ -41,10 +41,10 @@ const DeleteMedicineModal: React.FC<DeleteMedicineModalProps> = ({
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Removing...
+                Deleting...
               </>
             ) : (
-              'Yes, Remove'
+              'Yes, Delete'
             )}
           </button>
         </div>
@@ -53,4 +53,4 @@ const DeleteMedicineModal: React.FC<DeleteMedicineModalProps> = ({
   );
 };
 
-export default DeleteMedicineModal;
+export default DeleteStockModal;

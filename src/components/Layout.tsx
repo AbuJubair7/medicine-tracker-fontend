@@ -1,10 +1,10 @@
 
-import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { type FC } from 'react';
+import { Navigate, Link, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Pill, LayoutDashboard, Settings, Bell } from 'lucide-react';
 
-const Layout: React.FC = () => {
+const Layout: FC = () => {
   const { logout, isAuthenticated } = useAuth();
 
   if (!isAuthenticated) return <Outlet />;

@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Component, type ReactNode, type FormEvent, Fragment } from 'react';
 import api from '@/services/api';
 import StockCard from './StockCard';
 import StockDetailsModal from './StockDetailsModal';
 import LoadingSpinner from './LoadingSpinner';
 
 // Error Boundary Component
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: any }> {
   state = { hasError: false, error: null };
-  readonly props!: { children: React.ReactNode };
+  readonly props!: { children: ReactNode };
 
   static getDerivedStateFromError(error: any) {
     return { hasError: true, error };
@@ -151,7 +151,7 @@ function StockListContent() {
   }, [hasMore, isFetchingMore, loading]);
 
 
-  const handleCreateSubmit = async (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
@@ -251,7 +251,7 @@ function StockListContent() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1.5rem' }}>
           {Array.isArray(stocks) && stocks.filter(s => s && s.id).map(stock => (
-            <React.Fragment key={stock.id}>
+            <Fragment key={stock.id}>
               <StockCard 
                 id={stock.id}
                 name={stock.name}
@@ -260,7 +260,7 @@ function StockListContent() {
                 onEdit={() => startEditStock(stock)}
                 onDelete={() => handleDeleteStock(stock.id)}
               />
-            </React.Fragment>
+            </Fragment>
           ))}
         </div>
       )}

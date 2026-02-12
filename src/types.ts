@@ -19,6 +19,7 @@ export interface Stock {
   id: number;
   name: string;
   medicines: Medicine[];
+  medicineCount?: number;
   createdAt: string;
 }
 

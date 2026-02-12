@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/authService';
+import { authService } from '@/services/authService';
 import { Pill, Mail, Lock, Loader2, ArrowRight, AlertTriangle } from 'lucide-react';
 
-const Login: React.FC = () => {
+const Login: FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ const Login: React.FC = () => {
 
 
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);

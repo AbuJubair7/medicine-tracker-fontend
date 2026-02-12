@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface StockCardProps {
   id: number;
   name: string;

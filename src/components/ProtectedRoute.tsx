@@ -1,9 +1,9 @@
 
-import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { type FC, type ReactNode } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) return null;

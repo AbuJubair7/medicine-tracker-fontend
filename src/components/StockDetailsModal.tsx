@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import api from '@/services/api';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -48,7 +48,7 @@ export default function StockDetailsModal({ stockId, stockName, medicines, onClo
     setEditingId(null);
   };
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
@@ -69,7 +69,7 @@ export default function StockDetailsModal({ stockId, stockName, medicines, onClo
     }
   };
 
-  const handleEditSubmit = async (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!editingId) return;
     setSubmitting(true);

@@ -1,6 +1,6 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Package, Trash2, ArrowRight, Pill } from 'lucide-react';
-import { Stock } from '../types';
+import { Stock } from '@/types';
 
 interface StockCardItemProps {
   stock: Stock;
