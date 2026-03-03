@@ -1,0 +1,457 @@
+.detail-container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding-bottom: 96px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 24px;
+  transition: color var(--transition-fast);
+}
+
+.back-btn:hover {
+  color: var(--text-primary);
+}
+
+.detail-header-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .detail-header-section {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.detail-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.detail-icon-wrapper {
+  padding: 4px;
+}
+
+.detail-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.detail-title {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.detail-subtitle {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Schedule Grid */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+@media (min-width: 1024px) {
+  .schedule-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.schedule-column {
+  border-radius: var(--border-radius-xl);
+  padding: 24px;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.schedule-column.morning {
+  background: rgba(251, 191, 36, 0.05);
+  border-color: rgba(251, 191, 36, 0.15);
+}
+
+.schedule-column.noon {
+  background: rgba(56, 189, 248, 0.05);
+  border-color: rgba(56, 189, 248, 0.15);
+}
+
+.schedule-column.evening {
+  background: rgba(139, 92, 246, 0.05);
+  border-color: rgba(139, 92, 246, 0.15);
+}
+
+.schedule-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.schedule-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.morning .schedule-icon-wrapper {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.noon .schedule-icon-wrapper {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.evening .schedule-icon-wrapper {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+.schedule-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.schedule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Medicine Card */
+.med-card {
+  border-radius: var(--border-radius-md);
+  padding: 20px;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.med-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.med-name-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.med-name {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.med-dose {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.med-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 1;
+  transition: opacity var(--transition-fast);
+}
+
+@media (min-width: 640px) {
+  .med-actions {
+    opacity: 0;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+  .med-card:hover .med-actions {
+    opacity: 1;
+  }
+}
+
+.med-action-btn {
+  padding: 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.med-action-btn.edit {
+  color: var(--text-secondary);
+}
+.med-action-btn.edit:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.med-action-btn.delete {
+  color: var(--text-secondary);
+}
+.med-action-btn.delete:hover {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Quantity Control */
+.med-qty-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.med-qty-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.med-qty-btn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.med-qty-btn:hover:not(:disabled) {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.med-qty-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.med-qty-display {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.qty-danger { color: var(--danger); }
+.qty-warning { color: var(--warning); }
+.qty-success { color: var(--success); }
+
+/* Medicine Modal */
+.med-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.med-modal-intro {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(139, 92, 246, 0.08));
+}
+
+.med-modal-intro-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.med-modal-intro-text {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.med-modal-field {
+  margin-bottom: 0;
+}
+
+.med-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .med-modal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.med-schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.med-schedule-header .modal-form-label {
+  margin-bottom: 0;
+}
+
+.med-schedule-hint {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.med-schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: start;
+}
+
+@media (min-width: 480px) {
+  .med-schedule-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.med-schedule-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  background: var(--bg-surface);
+  padding: 8px 10px;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.med-schedule-card.active {
+  transform: translateY(-1px);
+}
+
+.med-schedule-card.expanded {
+  box-shadow: 0 6px 12px rgba(2, 6, 23, 0.06);
+}
+
+.med-schedule-card.morning.active {
+  border-color: rgba(251, 191, 36, 0.5);
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.med-schedule-card.noon.active {
+  border-color: rgba(56, 189, 248, 0.5);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.med-schedule-card.evening.active {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.med-schedule-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  padding: 6px 4px;
+  border: none;
+  border-radius: var(--border-radius-md);
+  background: transparent;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.med-schedule-toggle svg {
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.med-schedule-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.med-schedule-card.morning.active .med-schedule-toggle {
+  color: #b45309;
+}
+
+.med-schedule-card.noon.active .med-schedule-toggle {
+  color: #0369a1;
+}
+
+.med-schedule-card.evening.active .med-schedule-toggle {
+  color: #6d28d9;
+}
+
+.med-time-picker {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.med-time-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.med-time-select {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+}
+
+.med-modal-submit-btn {
+  background-color: var(--primary);
+  background-image: linear-gradient(90deg, var(--primary), var(--accent, #7c3aed));
+  color: white;
+  border: 1px solid transparent;
+  margin: 0;
+  width: 100%;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.25);
+}
+
+.med-modal-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+}
+
+.med-modal-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+html.light .med-modal-submit-btn {
+  background-color: #2563eb;
+  background-image: linear-gradient(90deg, #2563eb, #7c3aed);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.32);
+}

@@ -2,15 +2,18 @@
 import { type FC } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import StockDetail from './pages/StockDetail';
+import Reminders from './pages/Reminders';
 
 const App: FC = () => {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -34,9 +37,18 @@ const App: FC = () => {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="reminders" 
+            element={
+              <ProtectedRoute>
+                <Reminders />
+              </ProtectedRoute>
+            } 
+          />
         </Route>
       </Routes>
     </AuthProvider>
+    </ThemeProvider>
   );
 };
 

@@ -1,0 +1,237 @@
+/* Modal Base Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    padding: 24px;
+  }
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  transition: opacity var(--transition-normal);
+}
+
+.modal-backdrop.dark {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-backdrop.light {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 512px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-xl);
+  transform-origin: center;
+  transition: all var(--transition-normal);
+  animation: slideUp 0.3s ease-out forwards;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-close-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-full);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 16px 24px;
+}
+
+/* Common Modal Form Styles */
+.modal-form-group {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.modal-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.modal-form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  font-size: 1rem;
+}
+
+.modal-form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  background: var(--bg-surface);
+  border-radius: 0 0 var(--border-radius-xl) var(--border-radius-xl);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-action-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.modal-action-btn {
+  flex: 1;
+  padding: 16px;
+  border-radius: var(--border-radius-lg);
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.modal-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-btn-cancel {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.modal-btn-cancel:hover:not(:disabled) {
+  background: var(--bg-surface-hover);
+}
+
+.modal-btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.modal-btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.modal-text-muted {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Share Modal Styles */
+.share-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--border-radius-xl);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  transition: all var(--transition-fast);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.share-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.share-btn.copied {
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.share-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-elevated);
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.share-btn:hover .share-icon-box {
+  background: var(--primary);
+  color: white;
+}
+
+.share-btn.copied .share-icon-box {
+  background: var(--success);
+  color: white;
+}
+
+.share-text-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.share-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

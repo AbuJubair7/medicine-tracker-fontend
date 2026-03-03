@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "cross-env TZ=Asia/Dhaka vite",
+    "build": "cross-env TZ=Asia/Dhaka vite build",
+    "preview": "cross-env TZ=Asia/Dhaka vite preview"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.4",
@@ -21,6 +21,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
+    "cross-env": "^10.1.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

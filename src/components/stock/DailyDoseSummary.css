@@ -1,0 +1,126 @@
+.daily-summary-card {
+  padding: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .daily-summary-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.daily-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.daily-summary-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.daily-summary-stats {
+  display: flex;
+  flex-direction: column;
+}
+
+.daily-summary-total {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.daily-summary-total span {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.daily-summary-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.daily-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .daily-summary-right {
+    gap: 24px;
+  }
+}
+
+.daily-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.daily-summary-item-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.daily-summary-item.morning .daily-summary-item-icon {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.daily-summary-item.noon .daily-summary-item-icon {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+.daily-summary-item.evening .daily-summary-item-icon {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+.daily-summary-item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.daily-summary-item-count {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.daily-summary-item-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.daily-summary-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border-color);
+}

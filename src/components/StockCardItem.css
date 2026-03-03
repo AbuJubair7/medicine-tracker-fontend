@@ -1,0 +1,106 @@
+.stock-card {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 24px;
+}
+
+.stock-card-delete-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+  z-index: 10;
+}
+
+/* Show delete button on hover or focus-within for accessibility */
+.stock-card:hover .stock-card-delete-wrapper,
+.stock-card:focus-within .stock-card-delete-wrapper {
+  opacity: 1;
+}
+
+/* Ensure mobile devices always see the delete button since they can't hover effectively */
+@media (hover: none) {
+  .stock-card-delete-wrapper {
+    opacity: 1;
+  }
+}
+
+.stock-card-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+  background: var(--bg-surface-elevated);
+}
+
+.stock-card-delete-btn:hover {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.1);
+}
+
+.stock-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stock-card-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-md);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.stock-card-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.stock-card-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 32px;
+  line-height: 1.3;
+}
+
+.stock-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: transform var(--transition-normal);
+  transform: translateX(-4px);
+}
+
+.stock-card-footer-icon {
+  opacity: 0;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  transform: translateX(-8px);
+}
+
+.stock-card:hover .stock-card-footer {
+  transform: translateX(0);
+}
+
+.stock-card:hover .stock-card-footer-icon {
+  opacity: 1;
+  transform: translateX(0);
+}

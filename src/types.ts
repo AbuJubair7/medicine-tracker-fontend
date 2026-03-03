@@ -13,6 +13,9 @@ export interface Medicine {
   takeMorning: boolean;
   takeAfternoon: boolean;
   takeEvening: boolean;
+  morningTime?: number;
+  afternoonTime?: number;
+  eveningTime?: number;
 }
 
 export interface Stock {
