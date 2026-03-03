@@ -34,6 +34,7 @@
   position: relative;
   width: 100%;
   max-width: 512px;
+  max-height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
   border-radius: var(--border-radius-xl);
@@ -79,6 +80,9 @@
 
 .modal-body {
   padding: 16px 24px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Common Modal Form Styles */

@@ -60,13 +60,8 @@
 .daily-summary-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
-}
-
-@media (min-width: 640px) {
-  .daily-summary-right {
-    gap: 24px;
-  }
 }
 
 .daily-summary-item {
