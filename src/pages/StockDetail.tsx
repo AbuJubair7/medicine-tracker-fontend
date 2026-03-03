@@ -1,12 +1,24 @@
 
-import { useEffect, useState, type FC, type FormEvent, type ChangeEvent, Fragment } from 'react';
+import { useEffect, useState, type FC, type FormEvent, Fragment } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Edit2, Trash2, Pill, Sun, Clock, Moon, Loader2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Plus, Minus, Edit2, Trash2, Sun, Clock, Moon, Loader2, Share2 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 import { stockService } from '@/services/stockService';
 import { Stock, Medicine } from '@/types';
 import Modal from '@/components/Modal';
 import DeleteMedicineModal from '@/components/modals/DeleteMedicineModal';
 import EditStockModal from '../components/modals/EditStockModal';
+import ShareStockModal from '../components/modals/ShareStockModal';
+import DailyDoseSummary from '../components/stock/DailyDoseSummary';
+import MedicineTimeline from '../components/stock/MedicineTimeline';
+import './StockDetail.css';
+
+const MORNING_HOURS = [6, 7, 8, 9, 10, 11];
+const AFTERNOON_HOURS = [12, 13, 14, 15, 16, 17, 18];
+const EVENING_HOURS = [19, 20, 21, 22, 23];
+type ScheduleSlot = 'morning' | 'afternoon' | 'evening';
+
+const formatHourLabel = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
 
 const StockDetail: FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,417 +26,414 @@ const StockDetail: FC = () => {
   const [loading, setLoading] = useState(true);
   const [isMedModalOpen, setIsMedModalOpen] = useState(false);
   const [editingMed, setEditingMed] = useState<Medicine | null>(null);
+  const [expandedSlot, setExpandedSlot] = useState<ScheduleSlot | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
-  
-  // Edit Stock Name State
   const [isEditStockModalOpen, setIsEditStockModalOpen] = useState(false);
   const [editStockLoading, setEditStockLoading] = useState(false);
-  
-  // Medicine Form State
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [medForm, setMedForm] = useState({
-    name: '',
-    dose: '',
-    quantity: '',
-    takeMorning: false,
-    takeAfternoon: false,
-    takeEvening: false
+    name: '', dose: '', quantity: '',
+    takeMorning: false, takeAfternoon: false, takeEvening: false,
+    morningTime: '9', afternoonTime: '14', eveningTime: '21'
   });
-
   const navigate = useNavigate();
+  const { isDark } = useTheme();
 
   const fetchStock = async () => {
     if (!id) return;
-    try {
-      setLoading(true);
-      const data = await stockService.getOne(id);
-      setStock(data);
-    } catch (err) {
-      console.error('Failed to fetch stock', err);
-      navigate('/dashboard');
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); const data = await stockService.getOne(id); setStock(data); }
+    catch (err) { console.error('Failed to fetch stock', err); navigate('/dashboard'); }
+    finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchStock();
-  }, [id]);
+  useEffect(() => { fetchStock(); }, [id]);
 
   const resetForm = () => {
-    setMedForm({
-      name: '',
-      dose: '',
-      quantity: '',
-      takeMorning: false,
-      takeAfternoon: false,
-      takeEvening: false
-    });
+    setMedForm({ name: '', dose: '', quantity: '', takeMorning: false, takeAfternoon: false, takeEvening: false, morningTime: '9', afternoonTime: '14', eveningTime: '21' });
+    setExpandedSlot(null);
     setEditingMed(null);
+  };
+
+  const toggleSchedule = (slot: ScheduleSlot) => {
+    const isActive = slot === 'morning'
+      ? medForm.takeMorning
+      : slot === 'afternoon'
+        ? medForm.takeAfternoon
+        : medForm.takeEvening;
+
+    setMedForm(prev => ({
+      ...prev,
+      ...(slot === 'morning' && { takeMorning: !prev.takeMorning }),
+      ...(slot === 'afternoon' && { takeAfternoon: !prev.takeAfternoon }),
+      ...(slot === 'evening' && { takeEvening: !prev.takeEvening }),
+    }));
+
+    if (isActive) {
+      setExpandedSlot(prev => (prev === slot ? null : prev));
+      return;
+    }
+    setExpandedSlot(slot);
   };
 
   const handleAddMedicine = async (e: FormEvent) => {
     e.preventDefault();
     if (!id) return;
     
+    if (!medForm.takeMorning && !medForm.takeAfternoon && !medForm.takeEvening) {
+      alert("Please select at least one time slot (Morning, Noon, or Night) for this medicine.");
+      return;
+    }
+
     try {
       setActionLoading(true);
-      const payload = {
-        ...medForm,
-        dose: parseFloat(medForm.dose) || 0,
-        quantity: parseInt(medForm.quantity) || 0
-      };
-
+      const payload = { ...medForm, dose: parseFloat(medForm.dose) || 0, quantity: parseInt(medForm.quantity) || 0, morningTime: parseInt(medForm.morningTime as string) || 0, afternoonTime: parseInt(medForm.afternoonTime as string) || 0, eveningTime: parseInt(medForm.eveningTime as string) || 0 };
       if (editingMed) {
         const updatedMed = await stockService.editMedicine(editingMed.id, payload);
-        // Optimistically update the list
-        setStock(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            medicines: prev.medicines.map(m => m.id === updatedMed.id ? updatedMed : m)
-          };
-        });
+        setStock(prev => prev ? { ...prev, medicines: prev.medicines.map(m => m.id === updatedMed.id ? updatedMed : m) } : null);
       } else {
         const newMedicine = await stockService.addMedicine(id, payload);
-        setStock(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            medicines: [...(prev.medicines || []), newMedicine]
-          };
-        });
+        setStock(prev => prev ? { ...prev, medicines: [...(prev.medicines || []), newMedicine] } : null);
       }
-      setIsMedModalOpen(false);
-      resetForm();
-    } catch (err) {
-      console.error('Failed to save medicine', err);
-    } finally {
-      setActionLoading(false);
-    }
+      setIsMedModalOpen(false); resetForm();
+    } catch (err) { console.error('Failed to save medicine', err); }
+    finally { setActionLoading(false); }
   };
 
   const handleRenameStock = async (newName: string) => {
     if (!id || !stock) return;
-    try {
-      setEditStockLoading(true);
-      const updatedStock = await stockService.update(id, newName);
-      setStock(prev => prev ? { ...prev, name: updatedStock.name } : null);
-      setIsEditStockModalOpen(false);
-    } catch (err) {
-      console.error('Failed to update stock name', err);
-    } finally {
-      setEditStockLoading(false);
-    }
+    try { setEditStockLoading(true); const updatedStock = await stockService.update(id, newName); setStock(prev => prev ? { ...prev, name: updatedStock.name } : null); setIsEditStockModalOpen(false); }
+    catch (err) { console.error('Failed to update stock name', err); }
+    finally { setEditStockLoading(false); }
   };
 
   const handleEditClick = (med: Medicine) => {
     setEditingMed(med);
-    setMedForm({
-      name: med.name,
-      dose: med.dose.toString(),
-      quantity: med.quantity.toString(),
-      takeMorning: med.takeMorning,
-      takeAfternoon: med.takeAfternoon,
-      takeEvening: med.takeEvening
-    });
+    const initialExpanded = med.takeMorning ? 'morning' : med.takeAfternoon ? 'afternoon' : med.takeEvening ? 'evening' : null;
+    setExpandedSlot(initialExpanded);
+    setMedForm({ name: med.name, dose: med.dose.toString(), quantity: med.quantity.toString(), takeMorning: med.takeMorning, takeAfternoon: med.takeAfternoon, takeEvening: med.takeEvening, morningTime: med.morningTime?.toString() || '9', afternoonTime: med.afternoonTime?.toString() || '14', eveningTime: med.eveningTime?.toString() || '21' });
     setIsMedModalOpen(true);
   };
 
-  // Delete Medicine Modal State
   const [deleteMedModalOpen, setDeleteMedModalOpen] = useState(false);
   const [medToDelete, setMedToDelete] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const handleDeleteClick = (medId: number) => {
-    setMedToDelete(medId);
-    setDeleteMedModalOpen(true);
-  };
+  const handleDeleteClick = (medId: number) => { setMedToDelete(medId); setDeleteMedModalOpen(true); };
 
   const confirmDeleteMed = async () => {
     if (!medToDelete) return;
+    try { setDeleteLoading(true); await stockService.deleteMedicine(medToDelete); setStock(prev => prev ? { ...prev, medicines: prev.medicines.filter(m => m.id !== medToDelete) } : null); setDeleteMedModalOpen(false); }
+    catch (err) { console.error('Failed to delete medicine', err); }
+    finally { setDeleteLoading(false); setMedToDelete(null); }
+  };
+
+  const handleQuantityChange = async (medId: number, delta: number) => {
+    const med = stock?.medicines?.find(m => m.id === medId);
+    if (!med) return;
+    const newQty = Math.max(0, Number(med.quantity) + delta);
+    // Optimistic update
+    setStock(prev => prev ? { ...prev, medicines: prev.medicines.map(m => m.id === medId ? { ...m, quantity: newQty } : m) } : null);
     try {
-      setDeleteLoading(true);
-      await stockService.deleteMedicine(medToDelete);
-      setStock(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          medicines: prev.medicines.filter(m => m.id !== medToDelete)
-        };
-      });
-      setDeleteMedModalOpen(false);
+      await stockService.editMedicine(medId, { quantity: newQty });
     } catch (err) {
-      console.error('Failed to delete medicine', err);
-    } finally {
-      setDeleteLoading(false);
-      setMedToDelete(null); 
+      console.error('Failed to update quantity', err);
+      // Revert on error
+      setStock(prev => prev ? { ...prev, medicines: prev.medicines.map(m => m.id === medId ? { ...m, quantity: med.quantity } : m) } : null);
     }
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-      <p className="text-slate-500">Retrieving medications...</p>
+    <div className="dashboard-loading" style={{ minHeight: '60vh' }}>
+      <Loader2 size={40} color="var(--primary)" className="animate-spin" />
+      <p className="loading-text">Retrieving medications...</p>
     </div>
   );
 
   if (!stock) return null;
 
   return (
-    <div className="max-w-5xl mx-auto pb-24">
-      <button 
-        onClick={() => navigate('/dashboard')}
-        className="flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors font-semibold"
-      >
-        <ChevronLeft className="w-5 h-5" />
-        Back to Dashboard
+    <div className="detail-container animate-fade-in">
+      <button onClick={() => navigate('/dashboard')} className="back-btn">
+        <ChevronLeft size={20} /> Back to Dashboard
       </button>
 
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div className="detail-header-section">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-1">
-              <img src="/favicon.svg" alt="Stock Icon" className="w-12 h-12" />
+          <div className="detail-title-group">
+            <div className="detail-icon-wrapper">
+              <img src="/favicon.svg" alt="Stock Icon" className="detail-icon" />
             </div>
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">{stock.name}</h1>
-            <button 
-              onClick={() => setIsEditStockModalOpen(true)}
-              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-            >
-              <Edit2 className="w-5 h-5" />
+            <h1 className="detail-title">{stock.name}</h1>
+            <button onClick={() => setIsEditStockModalOpen(true)} className="btn-icon">
+              <Edit2 size={20} />
             </button>
           </div>
-          <p className="text-slate-500 font-medium">Inventory of {stock.medicines?.length || 0} medications</p>
+          <p className="detail-subtitle">Inventory of {stock.medicines?.length || 0} medications</p>
         </div>
-
-        <button 
-          onClick={() => {
-            resetForm();
-            setIsMedModalOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-blue-200 active:scale-95"
-        >
-          <Plus className="w-5 h-5" />
-          Add Medication
-        </button>
+        
+        <div className="detail-actions">
+          <button onClick={() => setIsShareModalOpen(true)} className="btn btn-secondary glass-card">
+            <Share2 size={20} /> Share
+          </button>
+          <button onClick={() => { resetForm(); setIsMedModalOpen(true); }} className="btn btn-primary">
+            <Plus size={20} /> Add Medication
+          </button>
+        </div>
       </div>
+
+      <DailyDoseSummary medicines={stock.medicines || []} />
+      <MedicineTimeline medicines={stock.medicines || []} />
 
       {/* 3-Column Schedule Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Morning Column */}
-        <div className="bg-orange-50/50 rounded-[2.5rem] p-6 border border-orange-100/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600">
-              <Sun className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">Morning</h2>
+      <div className="schedule-grid">
+        {/* Morning */}
+        <div className="glass-card schedule-column morning">
+          <div className="schedule-header">
+            <div className="schedule-icon-wrapper"><Sun size={20} /></div>
+            <h2 className="schedule-title">Morning</h2>
           </div>
-          <div className="space-y-4">
+          <div className="schedule-content">
             {stock.medicines?.filter(m => m.takeMorning).map(med => (
-              <Fragment key={`${med.id}-morning`}>
-                <MedicineCard 
-                  med={med} 
-                  onEdit={() => handleEditClick(med)} 
-                  onDelete={() => handleDeleteClick(med.id)}
-                />
-              </Fragment>
+              <Fragment key={`${med.id}-morning`}><MedicineCard med={med} onEdit={() => handleEditClick(med)} onDelete={() => handleDeleteClick(med.id)} onQuantityChange={handleQuantityChange} isDark={isDark} /></Fragment>
             ))}
-            {(!stock.medicines || !stock.medicines.some(m => m.takeMorning)) && (
-              <EmptyState message="No morning meds" />
-            )}
+            {(!stock.medicines || !stock.medicines.some(m => m.takeMorning)) && <EmptyState message="No morning meds" />}
           </div>
         </div>
 
-        {/* Noon Column */}
-        <div className="bg-blue-50/50 rounded-[2.5rem] p-6 border border-blue-100/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600">
-              <Clock className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">Noon</h2>
+        {/* Noon */}
+        <div className="glass-card schedule-column noon">
+          <div className="schedule-header">
+            <div className="schedule-icon-wrapper"><Clock size={20} /></div>
+            <h2 className="schedule-title">Noon</h2>
           </div>
-          <div className="space-y-4">
+          <div className="schedule-content">
             {stock.medicines?.filter(m => m.takeAfternoon).map(med => (
-              <Fragment key={`${med.id}-noon`}>
-                <MedicineCard 
-                  med={med} 
-                  onEdit={() => handleEditClick(med)} 
-                  onDelete={() => handleDeleteClick(med.id)}
-                />
-              </Fragment>
+              <Fragment key={`${med.id}-noon`}><MedicineCard med={med} onEdit={() => handleEditClick(med)} onDelete={() => handleDeleteClick(med.id)} onQuantityChange={handleQuantityChange} isDark={isDark} /></Fragment>
             ))}
-            {(!stock.medicines || !stock.medicines.some(m => m.takeAfternoon)) && (
-              <EmptyState message="No noon meds" />
-            )}
+            {(!stock.medicines || !stock.medicines.some(m => m.takeAfternoon)) && <EmptyState message="No noon meds" />}
           </div>
         </div>
 
-        {/* Evening Column */}
-        <div className="bg-indigo-50/50 rounded-[2.5rem] p-6 border border-indigo-100/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600">
-              <Moon className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold text-slate-800">Evening</h2>
+        {/* Evening */}
+        <div className="glass-card schedule-column evening">
+          <div className="schedule-header">
+            <div className="schedule-icon-wrapper"><Moon size={20} /></div>
+            <h2 className="schedule-title">Evening</h2>
           </div>
-          <div className="space-y-4">
+          <div className="schedule-content">
             {stock.medicines?.filter(m => m.takeEvening).map(med => (
-              <Fragment key={`${med.id}-evening`}>
-                <MedicineCard 
-                  med={med} 
-                  onEdit={() => handleEditClick(med)} 
-                  onDelete={() => handleDeleteClick(med.id)}
-                />
-              </Fragment>
+              <Fragment key={`${med.id}-evening`}><MedicineCard med={med} onEdit={() => handleEditClick(med)} onDelete={() => handleDeleteClick(med.id)} onQuantityChange={handleQuantityChange} isDark={isDark} /></Fragment>
             ))}
-            {(!stock.medicines || !stock.medicines.some(m => m.takeEvening)) && (
-              <EmptyState message="No evening meds" />
-            )}
+            {(!stock.medicines || !stock.medicines.some(m => m.takeEvening)) && <EmptyState message="No evening meds" />}
           </div>
         </div>
       </div>
 
-      <Modal  
+      {/* Add/Edit Medicine Modal */}
+      <Modal 
         isOpen={isMedModalOpen} 
-        onClose={() => setIsMedModalOpen(false)} 
+        onClose={() => { setIsMedModalOpen(false); setExpandedSlot(null); }}
         title={editingMed ? "Edit Medication" : "Add New Medication"}
+        footer={
+          <button type="submit" form="add-med-form" disabled={actionLoading} className="modal-action-btn med-modal-submit-btn">
+            {actionLoading ? <><Loader2 size={20} className="animate-spin" /> Saving...</> : editingMed ? "Update Medicine" : "Add to Stock"}
+          </button>
+        }
       >
-        <form onSubmit={handleAddMedicine} className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1.5">Medicine Name</label>
-              <input 
-                required
-                type="text"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                value={medForm.name}
-                onChange={e => setMedForm({...medForm, name: e.target.value})}
+        <form id="add-med-form" onSubmit={handleAddMedicine} className="med-modal-form">
+          <div className="med-modal-intro">
+            <p className="med-modal-intro-title">
+              {editingMed ? 'Adjust medication details' : 'Capture medication details'}
+            </p>
+            <p className="med-modal-intro-text">
+              Add dose, quantity, and schedule so stock tracking stays accurate.
+            </p>
+          </div>
+
+          <div className="modal-form-group med-modal-field">
+            <label className="modal-form-label">Medicine Name</label>
+            <input
+              required
+              type="text"
+              className="modal-form-input"
+              placeholder="e.g., Amoxicillin"
+              value={medForm.name}
+              onChange={e => setMedForm({ ...medForm, name: e.target.value })}
+            />
+          </div>
+
+          <div className="med-modal-grid">
+            <div className="modal-form-group med-modal-field">
+              <label className="modal-form-label">Dose (mg/ml)</label>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                placeholder="e.g., 500.5"
+                className="modal-form-input"
+                value={medForm.dose}
+                onChange={e => setMedForm({ ...medForm, dose: e.target.value })}
               />
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">Dose (mg/ml)</label>
-                <input 
-                  type="number"
-                  min="0"
-                  step="any"
-                  placeholder="e.g., 500.5"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                  value={medForm.dose}
-                  onChange={e => setMedForm({...medForm, dose: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1.5">Quantity</label>
-                <input 
-                  type="number"
-                  min="0"
-                  placeholder="e.g., 20"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                  value={medForm.quantity}
-                  onChange={e => setMedForm({...medForm, quantity: e.target.value})}
-                />
-              </div>
+            <div className="modal-form-group med-modal-field">
+              <label className="modal-form-label">Quantity</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="e.g., 20"
+                className="modal-form-input"
+                value={medForm.quantity}
+                onChange={e => setMedForm({ ...medForm, quantity: e.target.value })}
+              />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-3">Daily Schedule</label>
-              <div className="grid grid-cols-3 gap-3">
+          <div className="modal-form-group med-modal-field">
+            <div className="med-schedule-header">
+              <label className="modal-form-label">Daily Schedule</label>
+              <span className="med-schedule-hint">Select one or more time slots</span>
+            </div>
+            <div className="med-schedule-grid">
+              <div className={`med-schedule-card morning ${medForm.takeMorning ? 'active expanded' : ''}`}>
                 <button
                   type="button"
                   onClick={() => setMedForm({...medForm, takeMorning: !medForm.takeMorning})}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 ${medForm.takeMorning ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-slate-100 text-slate-400 bg-slate-50'}`}
+                  className="med-schedule-toggle"
+                  aria-pressed={medForm.takeMorning}
                 >
-                  <Sun className="w-6 h-6" />
-                  <span className="text-xs font-bold uppercase">Morning</span>
+                  <Sun size={18} />
+                  <span>Morning</span>
                 </button>
+                {medForm.takeMorning && (
+                  <div className="med-time-picker">
+                    <label className="med-time-label">Time</label>
+                    <select
+                      className="modal-form-input med-time-select"
+                      value={medForm.morningTime}
+                      onChange={e => setMedForm({ ...medForm, morningTime: e.target.value })}
+                    >
+                      {MORNING_HOURS.map(hour => (
+                        <option key={hour} value={hour}>
+                          {formatHourLabel(hour)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className={`med-schedule-card noon ${medForm.takeAfternoon ? 'active expanded' : ''}`}>
                 <button
                   type="button"
                   onClick={() => setMedForm({...medForm, takeAfternoon: !medForm.takeAfternoon})}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 ${medForm.takeAfternoon ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-400 bg-slate-50'}`}
+                  className="med-schedule-toggle"
+                  aria-pressed={medForm.takeAfternoon}
                 >
-                  <Clock className="w-6 h-6" />
-                  <span className="text-xs font-bold uppercase">Noon</span>
+                  <Clock size={18} />
+                  <span>Noon</span>
                 </button>
+                {medForm.takeAfternoon && (
+                  <div className="med-time-picker">
+                    <label className="med-time-label">Time</label>
+                    <select
+                      className="modal-form-input med-time-select"
+                      value={medForm.afternoonTime}
+                      onChange={e => setMedForm({ ...medForm, afternoonTime: e.target.value })}
+                    >
+                      {AFTERNOON_HOURS.map(hour => (
+                        <option key={hour} value={hour}>
+                          {formatHourLabel(hour)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className={`med-schedule-card evening ${medForm.takeEvening ? 'active expanded' : ''}`}>
                 <button
                   type="button"
                   onClick={() => setMedForm({...medForm, takeEvening: !medForm.takeEvening})}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 ${medForm.takeEvening ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-400 bg-slate-50'}`}
+                  className="med-schedule-toggle"
+                  aria-pressed={medForm.takeEvening}
                 >
-                  <Moon className="w-6 h-6" />
-                  <span className="text-xs font-bold uppercase">Night</span>
+                  <Moon size={18} />
+                  <span>Night</span>
                 </button>
+                {medForm.takeEvening && (
+                  <div className="med-time-picker">
+                    <label className="med-time-label">Time</label>
+                    <select
+                      className="modal-form-input med-time-select"
+                      value={medForm.eveningTime}
+                      onChange={e => setMedForm({ ...medForm, eveningTime: e.target.value })}
+                    >
+                      {EVENING_HOURS.map(hour => (
+                        <option key={hour} value={hour}>
+                          {formatHourLabel(hour)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-
-          <button 
-            type="submit"
-            disabled={actionLoading}
-            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
-          >
-            {actionLoading && <Loader2 className="w-5 h-5 animate-spin" />}
-            {editingMed ? "Update Medicine" : "Add to Stock"}
-          </button>
         </form>
       </Modal>
 
-      <DeleteMedicineModal
-        isOpen={deleteMedModalOpen}
-        onClose={() => setDeleteMedModalOpen(false)}
-        onConfirm={confirmDeleteMed}
-        loading={deleteLoading}
-      />
-      
-      <EditStockModal
-        isOpen={isEditStockModalOpen}
-        onClose={() => setIsEditStockModalOpen(false)}
-        onSubmit={handleRenameStock}
-        loading={editStockLoading}
-        initialName={stock.name}
-      />
+      <DeleteMedicineModal isOpen={deleteMedModalOpen} onClose={() => setDeleteMedModalOpen(false)} onConfirm={confirmDeleteMed} loading={deleteLoading} />
+      <EditStockModal isOpen={isEditStockModalOpen} onClose={() => setIsEditStockModalOpen(false)} onSubmit={handleRenameStock} loading={editStockLoading} initialName={stock.name} />
+      <ShareStockModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} stock={stock} />
     </div>
   );
 };
 
 export default StockDetail;
 
-const MedicineCard = ({ med, onEdit, onDelete }: { med: Medicine; onEdit: () => void; onDelete: () => void }) => (
-  <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative">
-    <div className="flex justify-between items-start mb-3">
-      <div className="flex flex-col">
-        <div className="flex items-baseline gap-2">
-          <h4 className="font-bold text-slate-800 text-lg leading-tight">{med.name}</h4>
-          <span className="text-sm font-medium text-slate-400">{med.dose} mg</span>
+const MedicineCard = ({ med, onEdit, onDelete, onQuantityChange, isDark }: { med: Medicine; onEdit: () => void; onDelete: () => void; onQuantityChange: (medId: number, delta: number) => void; isDark: boolean }) => {
+  const qty = Number(med.quantity);
+  const qtyColorClass = qty <= 5 ? 'qty-danger' : qty >= 10 ? 'qty-success' : 'qty-warning';
+  
+  return (
+    <div className="glass-card med-card">
+      <div className="med-card-header">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="med-name-group">
+            <h4 className="med-name">{med.name}</h4>
+            <span className="med-dose">{med.dose} mg</span>
+          </div>
+          
+          <div className="med-qty-control">
+            <button
+              onClick={(e) => { e.stopPropagation(); onQuantityChange(med.id, -1); }}
+              disabled={qty <= 0}
+              className="med-qty-btn"
+            >
+              <Minus size={16} />
+            </button>
+            <span className={`med-qty-display ${qtyColorClass}`}>{med.quantity}</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); onQuantityChange(med.id, 1); }}
+              className="med-qty-btn"
+            >
+              <Plus size={16} />
+            </button>
+            <span className="med-dose" style={{ marginLeft: '4px' }}>left</span>
+          </div>
         </div>
         
-        <div className="mt-3 flex items-center gap-2">
-          <span className={`text-2xl font-extrabold ${
-             Number(med.quantity) <= 5 ? 'text-red-600' : 
-             Number(med.quantity) >= 10 ? 'text-emerald-600' : 
-             'text-orange-500'
-          }`}>
-            {med.quantity}
-          </span>
-          <span className="text-sm font-medium text-slate-400 mt-1">left</span>
+        <div className="med-actions">
+          <button onClick={onEdit} className="med-action-btn edit"><Edit2 size={16} /></button>
+          <button onClick={onDelete} className="med-action-btn delete"><Trash2 size={16} /></button>
         </div>
       </div>
-
-      <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity absolute top-4 right-4 bg-white pl-2">
-        <button onClick={onEdit} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors">
-          <Edit2 className="w-4 h-4" />
-        </button>
-        <button onClick={onDelete} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const EmptyState = ({ message }: { message: string }) => (
-  <div className="text-center py-8 text-slate-400">
-    <p className="text-sm font-medium italic">{message}</p>
+  <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-muted)' }}>
+    <p style={{ fontSize: '0.875rem', fontWeight: 500, fontStyle: 'italic' }}>{message}</p>
   </div>
 );

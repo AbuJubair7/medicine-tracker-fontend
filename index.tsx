@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import './src/styles/global.css';
 import App from './src/App';
 
 // Using the specific Client ID provided to resolve authorization errors

@@ -1,0 +1,113 @@
+.timeline-card {
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.timeline-header-icon {
+  color: var(--primary);
+}
+
+.timeline-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-family: var(--font-sans);
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.timeline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-item-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.timeline-item-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-item-dose {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.timeline-item-status {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.timeline-item-days {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.timeline-item-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Status Colors */
+.timeline-status-danger { color: var(--danger); }
+.timeline-status-warning { color: var(--warning); }
+.timeline-status-success { color: var(--success); }
+.timeline-status-muted { color: var(--text-muted); }
+
+/* Progress Bar */
+.timeline-progress-track {
+  height: 8px;
+  border-radius: var(--border-radius-full);
+  background: var(--bg-surface-elevated);
+  overflow: hidden;
+}
+
+.timeline-progress-bar {
+  height: 100%;
+  border-radius: var(--border-radius-full);
+  transition: width 0.5s ease-in-out;
+}
+
+.progress-danger { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+.progress-warning { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.progress-success { background: linear-gradient(90deg, #10b981, #34d399); }
+.progress-muted { background: var(--bg-surface-hover); }

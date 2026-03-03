@@ -2,8 +2,10 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { authService } from '@/services/authService';
-import { Pill, User, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { User, Mail, Lock, Loader2, ArrowRight, SunMedium, Moon } from 'lucide-react';
+import './Login.css'; // Reusing auth shared styles
 
 const Signup: FC = () => {
   const [name, setName] = useState('');
@@ -12,6 +14,7 @@ const Signup: FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { login } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
@@ -28,81 +31,89 @@ const Signup: FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <div className="inline-block mb-6">
-            <img src="/favicon.svg" alt="Dosely Logo" className="w-28 h-28" />
+    <div className="login-container">
+      {/* Theme toggle */}
+      <button
+        onClick={toggleTheme}
+        className="theme-toggle btn-icon glass-card"
+        aria-label="Toggle Theme"
+      >
+        {isDark ? <SunMedium size={20} color="#fbbf24" /> : <Moon size={20} color="#475569" />}
+      </button>
+
+      {/* Ambient glow orbs */}
+      {isDark && (
+        <>
+          <div className="ambient-glow-blue" style={{ left: '-10%', top: '-20%', right: 'auto', bottom: 'auto' }} />
+          <div className="ambient-glow-cyan" style={{ right: '-10%', bottom: '-20%', left: 'auto', top: 'auto', background: 'rgba(139, 92, 246, 0.1)' }} />
+        </>
+      )}
+
+      <div className="login-content animate-slide-up delay-100">
+        <div className="login-header">
+          <div className="login-logo-wrapper">
+            <img src="/favicon.svg" alt="Dosely Logo" className="login-logo" />
           </div>
-          <h1 className="text-5xl font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>Join Dosely</h1>
-          <p className="text-slate-500 font-medium mt-2">Start tracking your health journey today.</p>
+          <h1 className="login-title text-gradient">Join Dosely</h1>
+          <p className="login-subtitle">Start tracking your health journey today.</p>
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
-          <form onSubmit={handleSignup} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm font-semibold border border-red-100">
-                {error}
+        <div className="glass-card login-card" style={{ boxShadow: 'var(--shadow-lg), 0 0 20px rgba(139, 92, 246, 0.15)' }}>
+          {error && (
+            <div className="alert-error">
+              <span>{error}</span>
+            </div>
+          )}
+          
+          <form onSubmit={handleSignup}>
+            <div className="form-group">
+              <label className="label-base">Full Name</label>
+              <div className="input-icon-wrapper">
+                <User className="input-icon" size={18} />
+                <input required type="text"
+                  className="input-base input-with-icon"
+                  placeholder="John Doe" 
+                  value={name} onChange={e => setName(e.target.value)}
+                />
               </div>
-            )}
+            </div>
             
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input 
-                  required
-                  type="text"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={e => setName(e.target.value)}
+            <div className="form-group">
+              <label className="label-base">Email Address</label>
+              <div className="input-icon-wrapper">
+                <Mail className="input-icon" size={18} />
+                <input required type="email"
+                  className="input-base input-with-icon"
+                  placeholder="name@example.com" 
+                  value={email} onChange={e => setEmail(e.target.value)}
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input 
-                  required
-                  type="email"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
+            
+            <div className="form-group">
+              <label className="label-base">Password</label>
+              <div className="input-icon-wrapper">
+                <Lock className="input-icon" size={18} />
+                <input required type="password"
+                  className="input-base input-with-icon"
+                  placeholder="Create a password" 
+                  value={password} onChange={e => setPassword(e.target.value)}
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input 
-                  required
-                  type="password"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  placeholder="Create a password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-
+            
             <button 
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-50"
+              type="submit" disabled={loading}
+              className="btn btn-primary submit-btn"
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--primary))' }}
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Create Account <ArrowRight className="w-5 h-5" /></>}
+              {loading ? <Loader2 size={20} className="animate-spin" /> : <>Create Account <ArrowRight size={18} /></>}
             </button>
           </form>
         </div>
 
-        <p className="text-center mt-10 text-slate-500 font-medium">
-          Already have an account? <Link to="/login" className="text-blue-600 font-bold hover:underline">Sign in</Link>
+        <p className="signup-prompt">
+          Already have an account? <Link to="/login" className="signup-link" style={{ color: 'var(--accent)' }}>Sign in</Link>
         </p>
       </div>
     </div>
